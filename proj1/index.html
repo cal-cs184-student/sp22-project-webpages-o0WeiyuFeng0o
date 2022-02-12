@@ -3,5 +3,55 @@
 	</head>
 	<body>
 		Project 1 here
+		Overview
+
+Give a high-level overview of what you implemented in this project. Think about what you've built as a whole. Share your thoughts on what interesting things you've learned from completing the project.
+
+Task 1 (20 pts)
+
+Walk through how you rasterize triangles in your own words.
+Explain how your algorithm is no worse than one that checks each sample within the bounding box of the triangle.
+Show a png screenshot of basic/test4.svg with the default viewing parameters and with the pixel inspector centered on an interesting part of the scene.
+Extra credit: Explain any special optimizations you did beyond simple bounding box triangle rasterization, with a timing comparison table (we suggest using the c++ clock() function around the svg.draw() command in DrawRend::redraw() to compare millisecond timings with your various optimizations off and on).
+Task 2 (20 pts)
+
+Walk through your supersampling algorithm and data structures. Why is supersampling useful? What modifications did you make to the rasterization pipeline in the process? Explain how you used supersampling to antialias your triangles.
+Show png screenshots of basic/test4.svg with the default viewing parameters and sample rates 1, 4, and 16 to compare them side-by-side. Position the pixel inspector over an area that showcases the effect dramatically; for example, a very skinny triangle corner. Explain why these results are observed.
+Extra credit: If you implemented alternative antialiasing methods, describe them and include comparison pictures demonstrating the difference between your method and grid-based supersampling.
+Task 3 (10 pts)
+
+Create an updated version of svg/transforms/robot.svg with cubeman doing something more interesting, like waving or running. Feel free to change his colors or proportions to suit your creativity. Save your svg file as my_robot.svg in your docs/ directory and show a png screenshot of your rendered drawing in your write-up. Explain what you were trying to do with cubeman in words.
+Task 4 (10 pts)
+
+Explain barycentric coordinates in your own words and use an image to aid you in your explanation. One idea is to use a svg file that plots a single triangle with one red, one green, and one blue vertex, which should produce a smoothly blended color triangle.
+Show a png screenshot of svg/basic/test7.svg with default viewing parameters and sample rate 1. If you make any additional images with color gradients, include them.
+Task 5 (15 pts)
+
+Explain pixel sampling in your own words and describe how you implemented it to perform texture mapping. Briefly discuss the two different pixel sampling methods, nearest and bilinear.
+Check out the svg files in the svg/texmap/ directory. Use the pixel inspector to find a good example of where bilinear sampling clearly defeats nearest sampling. Show and compare four png screenshots using nearest sampling at 1 sample per pixel, nearest sampling at 16 samples per pixel, bilinear sampling at 1 sample per pixel, and bilinear sampling at 16 samples per pixel.
+Comment on the relative differences. Discuss when there will be a large difference between the two methods and why.
+Task 6 (25 pts)
+
+Explain level sampling in your own words and describe how you implemented it for texture mapping.
+You can now adjust your sampling technique by selecting pixel sampling, level sampling, or the number of samples per pixel. Describe the tradeoffs between speed, memory usage, and antialiasing power between the three various techniques.
+Using a png file you find yourself, show us four versions of the image, using the combinations of L_ZERO and P_NEAREST, L_ZERO and P_LINEAR, L_NEAREST and P_NEAREST, as well as L_NEAREST and P_LINEAR.
+To use your own png, make a copy of one of the existing svg files in svg/texmap/ (or create your own modelled after one of the provided svg files). Then, near the top of the file, change the texture filename to point to your own png. From there, you can run ./draw and pass in that svg file to render it and then save a screenshot of your results.
+Note: Choose a png that showcases the different sampling effects well. You may also want to zoom in/out, use the pixel inspector, etc. to demonstrate the differences.
+Extra credit: If you implemented any extra filtering methods, describe them and show comparisons between your results with the other above methods.
+(Optional) Potential Extra Credit
+
+Save your best svg file as competition.svg in your docs/ directory, and show us a 800x800 png screenshot of it in your write-up!
+Explain how you did it. If you wrote a script to generate procedural svg files, include it in your submission in the src/ directory and briefly explain how it works.
+Website tips and advice
+
+Please include a link to your webpage at the bottom of your writeup
+Note that only one webpage is needed for both partners
+Be sure to include and turn in all of the other files (such as images) that are linked in your report!
+Use only relative paths to files, such as "./images/image.jpg"
+Do NOT use absolute paths, such as "/Users/student/Desktop/image.jpg"
+Pay close attention to your filename extensions. Remember that on UNIX systems (such as the instructional machines), capitalization matters. .png != .jpeg != .jpg != .JPG
+Be sure to adjust the permissions on your files so that they are world readable. For more information on this please see this tutorial.
+Start assembling your webpage early to make sure you have a handle on how to edit the HTML code to insert images and format sections. (Or you can use Markdown)
+
 	</body>
 </html>
