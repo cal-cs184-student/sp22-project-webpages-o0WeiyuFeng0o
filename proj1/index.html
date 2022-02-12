@@ -1,57 +1,153 @@
 <html>
-	<head>
-	</head>
-	<body>
-		Project 1 here
-		Overview
 
-Give a high-level overview of what you implemented in this project. Think about what you've built as a whole. Share your thoughts on what interesting things you've learned from completing the project.
+<head>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+		integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+</head>
 
-Task 1 (20 pts)
+<body class="py-5">
+	<h2 class="text-center mb-5">Project 1 - <span class="inline text-danger">Rasterizer</span></h2>
+	<div class="container">
+		<div class="row">
+			<div class="col-2 m-0 p-0"></div>
+			<div class="col-8 p-0 m-0">
+				<!-- Overview -->
+				<div>
+					<h4 class=""><u> Overview </u></h4>
+					<p>Here goes project overview!</p>
+					<p>Give a high-level overview of what you implemented in this project. Think about what you've built
+						as a whole. Share your thoughts on what interesting things you've learned from completing the
+						project.
+					</p>
+				</div>
+				<!-- Task 1 -->
+				<div>
+					<h4> <u>Task 1 - Drawing Single-Color Triangles</u></h4>
+						<p> <b>Walk-through:</b> Our algorithm first align each given points into the corresponding pixel center with formular (floor(x)+0.5,floor(y)+0.5). Then we calculate the bounding box of the triangle. The bounding box is defined using four points: X_max, X_min, Y_max, and Y_min. These points are calculated by finding the corresponding max/min value of the X and Y of the three given triangle points. 
+						</p>
+						<p>Then, we loop through every sample point inside the bounding box to check if they land within our triangle area. To design this algorithm, we notice the following facts: 1) For any given point P(x,y) and vector p0->p1:(x1-x0,y1-y0), if vector V, p0->p: (x-x0,y-y0), and the normal (perpendicular) vector N of p0->p1, have V * N > 0, then the point p is on the side that the normal vector points toward. Similarly, if V * N = 0, the point p is on the line p0->p1; if V * N < 0, the point p is on the opposite side that the normal vector points toward. In other words, this equation gives us a way to check which side of the vector a given point p will land on. Derived from this fact, if we assume all three normal vectors of three edges of a triangle are pointing inward, then by checking if V * N > 0 for all three V and N, we could know if a point is inside the triangle. Similarly, we could tackle the edge case (where a point lies exactly on the line) by checking if V * N = 0. This way of checking if a point is inside triangle is known as "Intersection of three half-plane" or "Three line tests". As instructed, we consider a point is inside triangle when the point lies exactly on the edge. </p>
 
-Walk through how you rasterize triangles in your own words.
-Explain how your algorithm is no worse than one that checks each sample within the bounding box of the triangle.
-Show a png screenshot of basic/test4.svg with the default viewing parameters and with the pixel inspector centered on an interesting part of the scene.
-Extra credit: Explain any special optimizations you did beyond simple bounding box triangle rasterization, with a timing comparison table (we suggest using the c++ clock() function around the svg.draw() command in DrawRend::redraw() to compare millisecond timings with your various optimizations off and on).
-Task 2 (20 pts)
+						<p>Now we know the basic theory behind "Three line tests" method, but notice that we made an assumption, which is the three normal vectors are all pointing inward. This assumption is not always true as the three points of the triangle could be given in any order. So we have to consider how the order of the points are given, counter-clock-wise or clock-wise, to make sure all normal vectors are pointing inward. We could go through every case of how three points are given with if-else statement, but that will be too complicated. With our observation, we notice that a normal vector points inward only when it points to the third point of the triangle, which could be wriiten as V_3 * N_12 > 0. Thus, no matter which order our points are given, we could check this equation for each edge, and if the V_3 * N_12 < 0, we flip the normal vector by N = -N to make sure it points inward. Then we could simply use V_point * N > 0 for three edges to determine if a point is inside a triangle. A further optimization on this is duscussed on the extra credit part.  </p>
 
-Walk through your supersampling algorithm and data structures. Why is supersampling useful? What modifications did you make to the rasterization pipeline in the process? Explain how you used supersampling to antialias your triangles.
-Show png screenshots of basic/test4.svg with the default viewing parameters and sample rates 1, 4, and 16 to compare them side-by-side. Position the pixel inspector over an area that showcases the effect dramatically; for example, a very skinny triangle corner. Explain why these results are observed.
-Extra credit: If you implemented alternative antialiasing methods, describe them and include comparison pictures demonstrating the difference between your method and grid-based supersampling.
-Task 3 (10 pts)
+						<p><b>Our algorithm is no worse</b> than the one that checks each sample with the bounding box of the
+							triangle because that is exactly how our program works. Our algorithm checks every sample points within the calculated bounding box. More details of the algroithm has already been discussed above.</p>
 
-Create an updated version of svg/transforms/robot.svg with cubeman doing something more interesting, like waving or running. Feel free to change his colors or proportions to suit your creativity. Save your svg file as my_robot.svg in your docs/ directory and show a png screenshot of your rendered drawing in your write-up. Explain what you were trying to do with cubeman in words.
-Task 4 (10 pts)
+						<p>Here we present the "test4.svg" with pixel inspector centered on an interesting part of the
+							scene. Through this image, we notice obvious aliasing on the edge of the triangle. This will be the proble we try to solve in the next task. </p>
+						<img src="../assets/task1_test4_svg.png" class="mx-auto d-block w-50" alt="test4.svg with aliasing">
+						<p><b>Extra credit:</b> We optimized our approach by leveraging the power of Barycentric coordinate and
+							performing several other optimizations. For using "Half-plane test" algorithm, we have to consider the winding order of the three given points, which raises additional run-time complexity. With Barycentric coordinate, we could easily determine if a point is inside a triangle by checking if all three coordinates are non-negative. This essentially integrates our observation mentioned in the previous section, and allows us to totally ignore the winding order of the given points, which makes the rasterization algroithm super simple but powerful. In addition, we did several minor optimizations such as removing the redundant part outside the for loop. Here is a timing comparision before and after optimization.</p>
+						<table class="table">
+							<thead>
+								<tr>
+									<th scope="col">Test case</th>
+									<th scope="col">Before optimizations</th>
+									<th scope="col">After optimizations</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>test3.svg</td>
+									<td>2.0</td>
+									<td>1.0</td>
+								</tr>
+								<tr>
+									<td>test4.svg</td>
+									<td>2.0</td>
+									<td>1.0</td>
+								</tr>
+								<tr>
+									<td>test5.svg</td>
+									<td>2.0</td>
+									<td>1.0</td>
+								</tr>
+							</tbody>
+						</table>
+				</div>
+				<!-- Task 2 -->
+				<div>
+					<h4> <u>Task 2 - Antialiasing by Supersampling</u></h4>
+					<p> Here goes task 2!</p>
+				</div>
+			</div>
+			<div class="col-2 m-0 p-0"></div>
+		</div>
+	</div>
 
-Explain barycentric coordinates in your own words and use an image to aid you in your explanation. One idea is to use a svg file that plots a single triangle with one red, one green, and one blue vertex, which should produce a smoothly blended color triangle.
-Show a png screenshot of svg/basic/test7.svg with default viewing parameters and sample rate 1. If you make any additional images with color gradients, include them.
-Task 5 (15 pts)
+	Task 1 (20 pts)
 
-Explain pixel sampling in your own words and describe how you implemented it to perform texture mapping. Briefly discuss the two different pixel sampling methods, nearest and bilinear.
-Check out the svg files in the svg/texmap/ directory. Use the pixel inspector to find a good example of where bilinear sampling clearly defeats nearest sampling. Show and compare four png screenshots using nearest sampling at 1 sample per pixel, nearest sampling at 16 samples per pixel, bilinear sampling at 1 sample per pixel, and bilinear sampling at 16 samples per pixel.
-Comment on the relative differences. Discuss when there will be a large difference between the two methods and why.
-Task 6 (25 pts)
 
-Explain level sampling in your own words and describe how you implemented it for texture mapping.
-You can now adjust your sampling technique by selecting pixel sampling, level sampling, or the number of samples per pixel. Describe the tradeoffs between speed, memory usage, and antialiasing power between the three various techniques.
-Using a png file you find yourself, show us four versions of the image, using the combinations of L_ZERO and P_NEAREST, L_ZERO and P_LINEAR, L_NEAREST and P_NEAREST, as well as L_NEAREST and P_LINEAR.
-To use your own png, make a copy of one of the existing svg files in svg/texmap/ (or create your own modelled after one of the provided svg files). Then, near the top of the file, change the texture filename to point to your own png. From there, you can run ./draw and pass in that svg file to render it and then save a screenshot of your results.
-Note: Choose a png that showcases the different sampling effects well. You may also want to zoom in/out, use the pixel inspector, etc. to demonstrate the differences.
-Extra credit: If you implemented any extra filtering methods, describe them and show comparisons between your results with the other above methods.
-(Optional) Potential Extra Credit
+	Task 2 (20 pts)
 
-Save your best svg file as competition.svg in your docs/ directory, and show us a 800x800 png screenshot of it in your write-up!
-Explain how you did it. If you wrote a script to generate procedural svg files, include it in your submission in the src/ directory and briefly explain how it works.
-Website tips and advice
+	Walk through your supersampling algorithm and data structures. Why is supersampling useful? What modifications did
+	you make to the rasterization pipeline in the process? Explain how you used supersampling to antialias your
+	triangles.
+	Show png screenshots of basic/test4.svg with the default viewing parameters and sample rates 1, 4, and 16 to compare
+	them side-by-side. Position the pixel inspector over an area that showcases the effect dramatically; for example, a
+	very skinny triangle corner. Explain why these results are observed.
+	Extra credit: If you implemented alternative antialiasing methods, describe them and include comparison pictures
+	demonstrating the difference between your method and grid-based supersampling.
+	Task 3 (10 pts)
 
-Please include a link to your webpage at the bottom of your writeup
-Note that only one webpage is needed for both partners
-Be sure to include and turn in all of the other files (such as images) that are linked in your report!
-Use only relative paths to files, such as "./images/image.jpg"
-Do NOT use absolute paths, such as "/Users/student/Desktop/image.jpg"
-Pay close attention to your filename extensions. Remember that on UNIX systems (such as the instructional machines), capitalization matters. .png != .jpeg != .jpg != .JPG
-Be sure to adjust the permissions on your files so that they are world readable. For more information on this please see this tutorial.
-Start assembling your webpage early to make sure you have a handle on how to edit the HTML code to insert images and format sections. (Or you can use Markdown)
+	Create an updated version of svg/transforms/robot.svg with cubeman doing something more interesting, like waving or
+	running. Feel free to change his colors or proportions to suit your creativity. Save your svg file as my_robot.svg
+	in your docs/ directory and show a png screenshot of your rendered drawing in your write-up. Explain what you were
+	trying to do with cubeman in words.
+	Task 4 (10 pts)
 
-	</body>
+	Explain barycentric coordinates in your own words and use an image to aid you in your explanation. One idea is to
+	use a svg file that plots a single triangle with one red, one green, and one blue vertex, which should produce a
+	smoothly blended color triangle.
+	Show a png screenshot of svg/basic/test7.svg with default viewing parameters and sample rate 1. If you make any
+	additional images with color gradients, include them.
+	Task 5 (15 pts)
+
+	Explain pixel sampling in your own words and describe how you implemented it to perform texture mapping. Briefly
+	discuss the two different pixel sampling methods, nearest and bilinear.
+	Check out the svg files in the svg/texmap/ directory. Use the pixel inspector to find a good example of where
+	bilinear sampling clearly defeats nearest sampling. Show and compare four png screenshots using nearest sampling at
+	1 sample per pixel, nearest sampling at 16 samples per pixel, bilinear sampling at 1 sample per pixel, and bilinear
+	sampling at 16 samples per pixel.
+	Comment on the relative differences. Discuss when there will be a large difference between the two methods and why.
+	Task 6 (25 pts)
+
+	Explain level sampling in your own words and describe how you implemented it for texture mapping.
+	You can now adjust your sampling technique by selecting pixel sampling, level sampling, or the number of samples per
+	pixel. Describe the tradeoffs between speed, memory usage, and antialiasing power between the three various
+	techniques.
+	Using a png file you find yourself, show us four versions of the image, using the combinations of L_ZERO and
+	P_NEAREST, L_ZERO and P_LINEAR, L_NEAREST and P_NEAREST, as well as L_NEAREST and P_LINEAR.
+	To use your own png, make a copy of one of the existing svg files in svg/texmap/ (or create your own modelled after
+	one of the provided svg files). Then, near the top of the file, change the texture filename to point to your own
+	png. From there, you can run ./draw and pass in that svg file to render it and then save a screenshot of your
+	results.
+	Note: Choose a png that showcases the different sampling effects well. You may also want to zoom in/out, use the
+	pixel inspector, etc. to demonstrate the differences.
+	Extra credit: If you implemented any extra filtering methods, describe them and show comparisons between your
+	results with the other above methods.
+	(Optional) Potential Extra Credit
+
+	Save your best svg file as competition.svg in your docs/ directory, and show us a 800x800 png screenshot of it in
+	your write-up!
+	Explain how you did it. If you wrote a script to generate procedural svg files, include it in your submission in the
+	src/ directory and briefly explain how it works.
+	Website tips and advice
+
+	Please include a link to your webpage at the bottom of your writeup
+	Note that only one webpage is needed for both partners
+	Be sure to include and turn in all of the other files (such as images) that are linked in your report!
+	Use only relative paths to files, such as "./images/image.jpg"
+	Do NOT use absolute paths, such as "/Users/student/Desktop/image.jpg"
+	Pay close attention to your filename extensions. Remember that on UNIX systems (such as the instructional machines),
+	capitalization matters. .png != .jpeg != .jpg != .JPG
+	Be sure to adjust the permissions on your files so that they are world readable. For more information on this please
+	see this tutorial.
+	Start assembling your webpage early to make sure you have a handle on how to edit the HTML code to insert images and
+	format sections. (Or you can use Markdown)
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+		integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+		crossorigin="anonymous"></script>
+
+</body>
+
 </html>
