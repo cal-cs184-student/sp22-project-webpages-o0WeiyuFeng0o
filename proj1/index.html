@@ -34,7 +34,9 @@
 
 						<p>Here we present the "test4.svg" with pixel inspector centered on an interesting part of the
 							scene. Through this image, we notice obvious aliasing on the edge of the triangle. This will be the proble we try to solve in the next task. </p>
-						<img src="../assets/task1_test4_svg.png" class="mx-auto d-block w-50" alt="test4.svg with aliasing">
+
+						<img src="assets/task1_test4_svg.png" class="mx-auto d-block w-50" alt="test4.svg with aliasing">
+
 						<p><b>Extra credit:</b> We optimized our approach by leveraging the power of Barycentric coordinate and
 							performing several other optimizations. For using "Half-plane test" algorithm, we have to consider the winding order of the three given points, which raises additional run-time complexity. With Barycentric coordinate, we could easily determine if a point is inside a triangle by checking if all three coordinates are non-negative. This essentially integrates our observation mentioned in the previous section, and allows us to totally ignore the winding order of the given points, which makes the rasterization algroithm super simple but powerful. In addition, we did several minor optimizations such as removing the redundant part outside the for loop. Here is a timing comparision before and after optimization.</p>
 						<table class="table">
