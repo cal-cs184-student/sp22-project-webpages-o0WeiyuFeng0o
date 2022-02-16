@@ -166,6 +166,8 @@
 						</p>
 						<p>When the program is conducting linear level sampling, bilinear pixel sampling at higher supersampling rate, the computer renders a better image with smoother lines and logical details. However, the GPU is dealing with more pixels at higher supersampling rate and conducting more operations caused by bilinear filterings compared to simply mapping the texture image onto the screen. Such a tradeoff leads to longer operation time and larger memory space.
 						</p>
+						<p>From the images below we could see that the L-zero and P-nearest has the most "blocky",not smoothy, images. Then, when we change p to the linear, we see image blurs a bit. However, if we change l to the nearest with p nearest, the image again blocky a bit, which may be caused by significance level difference (inconsistent) in pixels. Again, when we use the L-learest with p-linear, we get the best result.
+						</p>
 						<div class="row my-3">
 							<div class="col-6">
 								<img src="assets/zeron.png" class="mx-auto d-block w-100" alt="sample rate 9">
