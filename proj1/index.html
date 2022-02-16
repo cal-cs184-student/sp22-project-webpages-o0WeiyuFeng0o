@@ -161,9 +161,9 @@
 					<h4> <u>Task 6 - "Level sampling" with mipmaps for texture mapping</u></h4>
 						<p> <b>Walk-through:</b> Sometimes when we try to texture map a scene, we run into a problem which is that different parts of the scene require different levels of detail. For example, the scene front-most should be much more detailed than the scene far away. In these cases, we appeal to the concept of variable granularity. In other words, we will vary the detail of the textures we sampled depending on the size and distance of the objects in the scene. We can do this by using mipmaps. We compute various miplevels, where each successive miplevel is a lower resolution version of the previous miplevel texture. Level sampling is then used to determine which miplevel to sample from. To get the level of the sample pixel, we took   
 						</p>
+						<img src="assets/math.png" class="mx-auto d-block w-100" alt="math">
 						<p>du/dx and dv/dx stand for the gradient of u/v in x domain of the sample pixel, while du/dy and dv/dy stand for the gradient of u/v in y domain of the sample pixel. D is the level of the sample pixel. In order to get dx_uv and dy_uv, we additionally took the barycentric coordinates of uv with respect to the uv of three triangle vertex among a point at right and a point above. After implemented this algorithm in our get_level function, if we call nearest level sampling method, we directly output the rounded level and input it into pixel sampling function. If we call linear level sampling method, we conduct a lerp function by using the similar concept in bilinear pixel sampling. By taking the floor and ceil value of the level, we get two nearest levels and conduct linear filtering based on the bilinear filtering pixel sampling result among the two nearest levels to get the texel values of corresponding sample pixel. 
 						</p>
-						<img src="" class="mx-auto d-block w-100" alt="sample rate 9">
 						<p>When the program is conducting linear level sampling, bilinear pixel sampling at higher supersampling rate, the computer renders a better image with smoother lines and logical details. However, the GPU is dealing with more pixels at higher supersampling rate and conducting more operations caused by bilinear filterings compared to simply mapping the texture image onto the screen. Such a tradeoff leads to longer operation time and larger memory space.
 						</p>
 						<div class="row my-3">
@@ -187,6 +187,7 @@
 							</div>
 						</div>		
 				</div>
+				<p> <b>Link to the website: </b>https://cal-cs184-student.github.io/sp22-project-webpages-o0WeiyuFeng0o/proj1/index.html</p>
 			</div>
 			<!-- right margin -->
 			<div class="col-2 m-0 p-0"></div>
