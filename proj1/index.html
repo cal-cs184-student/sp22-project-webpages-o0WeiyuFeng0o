@@ -9,16 +9,13 @@
 	<h2 class="text-center mb-5">Project 1 - <span class="inline text-danger">Rasterizer</span></h2>
 	<div class="container">
 		<div class="row">
+			<!-- left margin -->
 			<div class="col-2 m-0 p-0"></div>
 			<div class="col-8 p-0 m-0">
 				<!-- Overview -->
 				<div>
 					<h4 class=""><u> Overview </u></h4>
-					<p>Here goes project overview!</p>
-					<p>Give a high-level overview of what you implemented in this project. Think about what you've built
-						as a whole. Share your thoughts on what interesting things you've learned from completing the
-						project.
-					</p>
+					<p>I implemented a rasterizer for scalable vector graphics (SVGs) in this project. My program will first parses input data from the given SVG and call different rasterizer (point, line, and triangle) to draw shapes accordingly. While the line rasterizer is built on top of the point rasterizer, the triangle rasterizer uses its own way for rasterization. Our triangle rasterizer will first sample points and check if each sample is inside triangle with "three-half-plane" test (un-optimized) or Barycentric coordinate (optimized). For edge cases where a sample lies exactly on an edge of the triangle, my algorithm decides to count them as inside the triangle. To tackle aliasing problem, I implemented jittered-sampling and super-sampling. After sampling, the rasterizer will then determine the color of each sample inside the triangle. For this, I developed an "color wheel" using barcentric interpolation, and performed texture mapping in the later tasks. For texture mapping, my algorithm supports two pixel sampling methods "nearest sampling" and "bilinear interpolation sampling" with three level sampling methods "zero", "nearest", and "bilinear interpolation". In addition, I also implemented the transforms, including translate, scale, and rotate. All details are provided below.
 				</div>
 				<!-- Task 1 -->
 				<div>
@@ -29,11 +26,9 @@
 
 						<p>Now we know the basic theory behind "Three line tests" method, but notice that we made an assumption, which is the three normal vectors are all pointing inward. This assumption is not always true as the three points of the triangle could be given in any order. So we have to consider how the order of the points are given, counter-clock-wise or clock-wise, to make sure all normal vectors are pointing inward. We could go through every case of how three points are given with if-else statement, but that will be too complicated. With our observation, we notice that a normal vector points inward only when it points to the third point of the triangle, which could be wriiten as V_3 * N_12 > 0. Thus, no matter which order our points are given, we could check this equation for each edge, and if the V_3 * N_12 < 0, we flip the normal vector by N = -N to make sure it points inward. Then we could simply use V_point * N > 0 for three edges to determine if a point is inside a triangle. A further optimization on this is duscussed on the extra credit part.  </p>
 
-						<p><b>Our algorithm is no worse</b> than the one that checks each sample with the bounding box of the
-							triangle because that is exactly how our program works. Our algorithm checks every sample points within the calculated bounding box. More details of the algroithm has already been discussed above.</p>
+						<p><b>Our algorithm is no worse</b> than the one that checks each sample with the bounding box of the triangle because that is exactly how our program works. Our algorithm checks every sample points within the calculated bounding box. More details of the algroithm has already been discussed above.</p>
 
-						<p>Here we present the "test4.svg" with pixel inspector centered on an interesting part of the
-							scene. Through this image, we notice obvious aliasing on the edge of the triangle. This will be the proble we try to solve in the next task. </p>
+						<p>Here we present the "test4.svg" with pixel inspector centered on an interesting part of the scene. Through this image, we notice obvious aliasing on the edge of the triangle. This will be the proble we try to solve in the next task. </p>
 
 						<img src="assets/task1_test4_svg.png" class="mx-auto d-block w-50" alt="test4.svg with aliasing">
 
@@ -50,102 +45,154 @@
 							<tbody>
 								<tr>
 									<td>test3.svg</td>
-									<td>2.0</td>
-									<td>1.0</td>
+									<td>0.14</td>
+									<td>0.016</td>
 								</tr>
 								<tr>
 									<td>test4.svg</td>
-									<td>2.0</td>
-									<td>1.0</td>
+									<td>0.01</td>
+									<td>0.004</td>
 								</tr>
 								<tr>
 									<td>test5.svg</td>
-									<td>2.0</td>
-									<td>1.0</td>
+									<td>0.03</td>
+									<td>0.006</td>
 								</tr>
 							</tbody>
 						</table>
 				</div>
 				<!-- Task 2 -->
 				<div>
-					<h4> <u>Task 2 - Antialiasing by Supersampling</u></h4>
-					<p> Here goes task 2!</p>
+					<h4> <u>Task 2 - Antialiasing by Sampling</u></h4>
+						<p> <b>Walk-through:</b> Supersampling is a method used to remove aliasing such as jagged edges from images rendered. Except for perfectly vertical and horizontal lines, we need apply supersampling anti-aliasing to smooth curves and lines. In our supersampling anti-aliasing algorithm, we transform one sample pixel to n*n pixels where n is equal to the square root of sample rate. As each sub-pixel has a single color, we take the average of RGB values in those n*n sub-pixels and assign them back to the one sample pixel. The first thing we do is resize the color sample_buffer from the original size of width*height to width*height*sample_rate. Then, we revised our rasterize_triangle function from task 1. By updating the original triangle vertex coordinates according to the new supersampling color sample_buffer structure, we also updated our checking iteration bounds to fill all the sub-pixels inside triangle with single color by calling fill_pixel function. After that, in our final step, we revise our resolve_to_framebuffer function to average up all n*n sub-pixels color values back to one sample pixel by iterating through all the sub-pixels belonging to that one sample pixel.
+						</p>
+						<p>When our supersample rate is 1 per pixel, the edge of the image is disconnected. While increasing the supersample rate from 1 to 16, the edge of the image gradually becomes continuous. The outer edge of the image under increased supersample rate seems more and more blur. This result is caused by the process of averaging up the sub-pixels color value to the sample pixel, as some sub-pixels in the sample pixel is not inside the triangle and therefore those sub-pixels color are all white. With this in mind, we can tell that the lighter sample pixel color, the less sub-pixels of the sample pixel are inside the triangle.
+						</p>
+						<div class="row">
+							<div class="col-6">
+								<img src="assets/SampleRate1.png" class="mx-auto d-block w-100" alt="sample rate 1" >
+								<div class="text-center"> Sample Rate 1</div>
+							</div>
+							<div class="col-6">
+								<img src="assets/SampleRate4.png" class="mx-auto d-block w-100" alt="sample rate 4">
+								<div class="text-center"> Sample Rate 4</div>
+							</div>
+						</div>
+						<div class="row my-3">
+							<div class="col-6">
+								<img src="assets/SampleRate9.png" class="mx-auto d-block w-100" alt="sample rate 9">
+								<div class="text-center"> Sample Rate 9</div>
+							</div>
+							<div class="col-6">
+								<img src="assets/SampleRate16.png" class="mx-auto d-block w-100" alt="sample rate 16">
+								<div class="text-center"> Sample Rate 16</div>
+							</div>
+						</div>
+						
+						<p><b>Extra credit:</b> Besides super-sampling, we also implemented jittered-sampling. Unlike super-sampling, where we put all sample at the center of the subpix, jittered-sampling uniformly sampled over the sub-pixel. Therefore, the exact position of each sample point will have a vaired position. This is helpful to reduce aliasing artifacts, such as moiré patterns, casued by regular sampling (same space between each sample point).</p>	
+				</div>
+				<!-- Task 3 -->
+				<div>
+					<h4> <u>Task 3 - Transforms</u></h4>
+						<p> <b>Walk-through:</b> In terms of transforms, we provided three matrix for the translate, scale, and roate. We used homogenuous coordinate for doing so. For the drawing, we tried to put robot's hands on hips. As we notice that the translation of the upper arm also applies to the lower left arm, we started by adding a rotation and adjusting the translation on the upper left arm. After putting upper left arm at an ideal position, we adjusted the translation and rotation of the lower arm. We also stretched the lower arm a bit to make our drawing more realistic. The similar changes has beed done to the right arm, left leg and right leg as well. 
+						</p>
+						<img src="assets/CubeMan.png" class="mx-auto d-block w-50" alt="my cube man"> <br>
+						<p><b>Extra credit:</b> I implemented view port rotation function for this task. With "Q" and "E", users could rotate the viewport by 90 degrees. I modified svg_to_ndc before it is converted to screen space. That means, I multiplied rotation matrix by the svg_to_ndc matrix and use the product as new ndc. As new ndc is the rotated one, we will see a rotated image when the ndc is converted to screen space.</p>
+						<div class="row my-3">
+							<div class="col-6">
+								<img src="assets/PressE.png" class="mx-auto d-block w-100" alt="sample rate 9">
+								<div class="text-center"> Press E to rotate 90 counter-clock-wise</div>
+							</div>
+							<div class="col-6">
+								<img src="assets/PressQ.png" class="mx-auto d-block w-100" alt="Q">
+								<div class="text-center"> Press Q to rotate 90 clock-wise</div>
+							</div>
+						</div>
+				</div>
+				<!-- Task 4 -->
+				<div>
+					<h4> <u>Task 4 - Barycentric Coordinates</u></h4>
+						<p> <b>Walk-through:</b> Barycentric Coordinate to me is about representing the relationship between three points of a triangle. That means, instead of caring about the absolute position of the three vertex in a bigger coordinate, barycentric coordinate only care about the relative position of three vertex, and thus build a coordinate between three vertex. Thus, from this perspective, each point inside the triangle could be represented as a joint contribution of three vertex. Thus, the multiplier of A,B,C represents the weight of each vertex - how much does it contribute to a given point. In addition, another way of thinking weight is the area the point formulate with two vertex.
+						</p>
+						<div class="row my-3">
+							<div class="col-1"></div>
+							<div class="col-4">
+								<img src="assets/baarycentric-aid.png" class="mx-auto d-block w-100" alt="barycentric-aid">
+								<div class="text-center"> Barycentric Coordinate</div>
+							</div>
+							<div class="col-1"></div>
+							<div class="col-5">
+								<img src="assets/barycoordinate-test7.png" class="mx-auto d-block w-100" alt="color wheel">
+								<div class="text-center"> Test7 - Color Wheel</div>
+							</div>
+							<div class="col-1"></div>
+						</div>
+				</div>
+				<!-- Task 5 -->
+				<div>
+					<h4> <u>Task 5 - "Pixel sampling" for texture mapping</u></h4>
+						<p> <b>Walk-through:</b> Pixel sampling is mapping data from a given source to the image. In our task 5, we mapped the data from a texture image to our screen by sampling. While our screen coordinates are in x, y coordinate frame, the textures are in u, v coordinate frame instead. In order to map the textures to our screen, we used two pixel sampling methods which are nearest pixel sampling and bilinear pixel sampling. In our nearest pixel sampling method, we first convert the original x, y location coordinates into u, v texture coordinates by using barycentric coordinate interpolation as the three vertex of the triangle provided their x, y location coordinates and also u, v texture coordinates. After computing the u, v corresponding to the pixel inside the triangle, we rounded its u, v to refer to the nearest u, v texel and mapped the nearest texel color value to the screen . The second method is bilinear pixel sampling. While nearest pixel sampling directly maps the nearest texel color, bilinear pixel sampling uses four nearest texels to map the color on screen. For a typical converted u, v texture coordinates, we referred to four nearest texels by taking ceil and floor of converted u, v. The original converted u, v is inside the bigger texel composed by the four nearest texel. The converted u, v is at distance s from the left texels in u dimension and distance t from the bottom texels in v dimension. The distance s and t were used to linearly interpolate the converted u, v with respect to the four nearest texels. The calculation in our linear interpolation used two horizontal lerp helper function and one vertical lerp function to get the linearly interpolated texel color values among four nearest texels. Compared with nearest pixel sampling method, bilinear pixel sampling method renders a smoother image than nearest pixel sampling. 
+						</p>
+						<p>At supersample rate 1, bilinear pixel sampling did a better job in taking surrounding pixels into account. As a result, the image has smoother transition between different textures, while the image from nearest pixel sampling failed to capture those smooth transitions. As supersample rate increased to 16, the images from two methods seem to be identical, since the increased supersampling rate allows the nearest pixel sampling method to capture the transitions in texture color more easily. However, the image quality produced by bilinear pixel sampling still outperforms that produced by nearest pixel sampling with smoother transitions even at high supersampling rate. In general, when the texture changes is condense and supersampling rate is low, the difference between the two method is most obvious as nearest pixel sampling method is unable to capture those quick and condense texture changes.
+						</p>
+						<div class="row my-3">
+							<div class="col-6">
+								<img src="assets/nearest_rate1.png" class="mx-auto d-block w-100" alt="sample rate 9">
+								<div class="text-center"> nearest with sampling rate 1</div>
+							</div>
+							<div class="col-6">
+								<img src="assets/bilinear_rate1.png" class="mx-auto d-block w-100" alt="Q">
+								<div class="text-center"> bilinear with sampling rate 1</div>
+							</div>
+						</div>
+						<div class="row my-3">
+							<div class="col-6">
+								<img src="assets/nearest_rate16.png" class="mx-auto d-block w-100" alt="sample rate 9">
+								<div class="text-center"> nearest with sampling rate 16</div>
+							</div>
+							<div class="col-6">
+								<img src="assets/bilinear_rate16.png" class="mx-auto d-block w-100" alt="Q">
+								<div class="text-center"> bilinear with sampling rate 16</div>
+							</div>
+						</div>
+				</div>
+				<!-- Task 6 -->
+				<div>
+					<h4> <u>Task 6 - "Level sampling" with mipmaps for texture mapping</u></h4>
+						<p> <b>Walk-through:</b> Sometimes when we try to texture map a scene, we run into a problem which is that different parts of the scene require different levels of detail. For example, the scene front-most should be much more detailed than the scene far away. In these cases, we appeal to the concept of variable granularity. In other words, we will vary the detail of the textures we sampled depending on the size and distance of the objects in the scene. We can do this by using mipmaps. We compute various miplevels, where each successive miplevel is a lower resolution version of the previous miplevel texture. Level sampling is then used to determine which miplevel to sample from. To get the level of the sample pixel, we took   
+						</p>
+						<p>du/dx and dv/dx stand for the gradient of u/v in x domain of the sample pixel, while du/dy and dv/dy stand for the gradient of u/v in y domain of the sample pixel. D is the level of the sample pixel. In order to get dx_uv and dy_uv, we additionally took the barycentric coordinates of uv with respect to the uv of three triangle vertex among a point at right and a point above. After implemented this algorithm in our get_level function, if we call nearest level sampling method, we directly output the rounded level and input it into pixel sampling function. If we call linear level sampling method, we conduct a lerp function by using the similar concept in bilinear pixel sampling. By taking the floor and ceil value of the level, we get two nearest levels and conduct linear filtering based on the bilinear filtering pixel sampling result among the two nearest levels to get the texel values of corresponding sample pixel. 
+						</p>
+						<img src="" class="mx-auto d-block w-100" alt="sample rate 9">
+						<p>When the program is conducting linear level sampling, bilinear pixel sampling at higher supersampling rate, the computer renders a better image with smoother lines and logical details. However, the GPU is dealing with more pixels at higher supersampling rate and conducting more operations caused by bilinear filterings compared to simply mapping the texture image onto the screen. Such a tradeoff leads to longer operation time and larger memory space.
+						</p>
+						<div class="row my-3">
+							<div class="col-6">
+								<img src="assets/zeron.png" class="mx-auto d-block w-100" alt="sample rate 9">
+								<div class="text-center"> L-zero with P-nearest</div>
+							</div>
+							<div class="col-6">
+								<img src="assets/zerol.png" class="mx-auto d-block w-100" alt="Q">
+								<div class="text-center"> L-zero with P-linear</div>
+							</div>
+						</div>
+						<div class="row my-3">
+							<div class="col-6">
+								<img src="assets/nn.png" class="mx-auto d-block w-100" alt="sample rate 9">
+								<div class="text-center"> L-nearest with P-nearest</div>
+							</div>
+							<div class="col-6">
+								<img src="assets/nl.png" class="mx-auto d-block w-100" alt="Q">
+								<div class="text-center"> L-nearest with P-linear</div>
+							</div>
+						</div>		
 				</div>
 			</div>
+			<!-- right margin -->
 			<div class="col-2 m-0 p-0"></div>
 		</div>
 	</div>
 
-	Task 1 (20 pts)
-
-
-	Task 2 (20 pts)
-
-	Walk through your supersampling algorithm and data structures. Why is supersampling useful? What modifications did
-	you make to the rasterization pipeline in the process? Explain how you used supersampling to antialias your
-	triangles.
-	Show png screenshots of basic/test4.svg with the default viewing parameters and sample rates 1, 4, and 16 to compare
-	them side-by-side. Position the pixel inspector over an area that showcases the effect dramatically; for example, a
-	very skinny triangle corner. Explain why these results are observed.
-	Extra credit: If you implemented alternative antialiasing methods, describe them and include comparison pictures
-	demonstrating the difference between your method and grid-based supersampling.
-	Task 3 (10 pts)
-
-	Create an updated version of svg/transforms/robot.svg with cubeman doing something more interesting, like waving or
-	running. Feel free to change his colors or proportions to suit your creativity. Save your svg file as my_robot.svg
-	in your docs/ directory and show a png screenshot of your rendered drawing in your write-up. Explain what you were
-	trying to do with cubeman in words.
-	Task 4 (10 pts)
-
-	Explain barycentric coordinates in your own words and use an image to aid you in your explanation. One idea is to
-	use a svg file that plots a single triangle with one red, one green, and one blue vertex, which should produce a
-	smoothly blended color triangle.
-	Show a png screenshot of svg/basic/test7.svg with default viewing parameters and sample rate 1. If you make any
-	additional images with color gradients, include them.
-	Task 5 (15 pts)
-
-	Explain pixel sampling in your own words and describe how you implemented it to perform texture mapping. Briefly
-	discuss the two different pixel sampling methods, nearest and bilinear.
-	Check out the svg files in the svg/texmap/ directory. Use the pixel inspector to find a good example of where
-	bilinear sampling clearly defeats nearest sampling. Show and compare four png screenshots using nearest sampling at
-	1 sample per pixel, nearest sampling at 16 samples per pixel, bilinear sampling at 1 sample per pixel, and bilinear
-	sampling at 16 samples per pixel.
-	Comment on the relative differences. Discuss when there will be a large difference between the two methods and why.
-	Task 6 (25 pts)
-
-	Explain level sampling in your own words and describe how you implemented it for texture mapping.
-	You can now adjust your sampling technique by selecting pixel sampling, level sampling, or the number of samples per
-	pixel. Describe the tradeoffs between speed, memory usage, and antialiasing power between the three various
-	techniques.
-	Using a png file you find yourself, show us four versions of the image, using the combinations of L_ZERO and
-	P_NEAREST, L_ZERO and P_LINEAR, L_NEAREST and P_NEAREST, as well as L_NEAREST and P_LINEAR.
-	To use your own png, make a copy of one of the existing svg files in svg/texmap/ (or create your own modelled after
-	one of the provided svg files). Then, near the top of the file, change the texture filename to point to your own
-	png. From there, you can run ./draw and pass in that svg file to render it and then save a screenshot of your
-	results.
-	Note: Choose a png that showcases the different sampling effects well. You may also want to zoom in/out, use the
-	pixel inspector, etc. to demonstrate the differences.
-	Extra credit: If you implemented any extra filtering methods, describe them and show comparisons between your
-	results with the other above methods.
-	(Optional) Potential Extra Credit
-
-	Save your best svg file as competition.svg in your docs/ directory, and show us a 800x800 png screenshot of it in
-	your write-up!
-	Explain how you did it. If you wrote a script to generate procedural svg files, include it in your submission in the
-	src/ directory and briefly explain how it works.
-	Website tips and advice
-
-	Please include a link to your webpage at the bottom of your writeup
-	Note that only one webpage is needed for both partners
-	Be sure to include and turn in all of the other files (such as images) that are linked in your report!
-	Use only relative paths to files, such as "./images/image.jpg"
-	Do NOT use absolute paths, such as "/Users/student/Desktop/image.jpg"
-	Pay close attention to your filename extensions. Remember that on UNIX systems (such as the instructional machines),
-	capitalization matters. .png != .jpeg != .jpg != .JPG
-	Be sure to adjust the permissions on your files so that they are world readable. For more information on this please
-	see this tutorial.
-	Start assembling your webpage early to make sure you have a handle on how to edit the HTML code to insert images and
-	format sections. (Or you can use Markdown)
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
 		integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
 		crossorigin="anonymous"></script>
