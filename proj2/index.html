@@ -25,7 +25,7 @@
 				<div class="my-4">
 					<h4> <u>Task 1 - Bezier Curves with 1D de Casteljau Subdivision</u></h4>
 					<p> <b>Walk-through:</b>
-						De Casteljau's algorithm calculate a Bezier curve from given control points through a recursive method. To implement it, we first connect all points from beginning points to end points to form edges. Then, we create a point to split each edge at a porpotion between 0 and 1. Thus, by connecting these new points, we get n-1 new edges from original n edges. Then we repeat this procedure until the algorithm converges to a single point. This point will lie exactly on the final Bezier curve. Now we know how to get one point on Bezier curve for a given porpotion t. If we go through every t, we will get our final Bezier curve.
+						De Casteljau's algorithm calculate a Bezier curve from given control points through a recursive method. To implement it, we first connect all points from beginning points to end points to form edges. Then, we create a point to split each edge at a portion between 0 and 1. Thus, by connecting these new points, we get n-1 new edges from original n edges. Then we repeat this procedure until the algorithm converges to a single point. This point will lie exactly on the final Bezier curve. Now we know how to get one point on Bezier curve for a given portion t. If we go through every t, we will get our final Bezier curve.
 					</p>
 					<div class="row">
 						<div class="col-6">
@@ -95,7 +95,7 @@
 				<div class="my-4">
 					<h4><u> Task 3 - Average normals for half-edge meshes</u></h4>
 					<p> <b>Walk-through:</b>
-						Flat shading has normal vector per triangle while Gouraud shading and Phong shading has normal vector per vertex. Gouraud shading and Phong shading work better on smooth surfaces because the per vertex normal vector smoothen the transit both inside and between triangles. To calculate a vertex normal vector from triangle normal vector, we iterated through all neiboring triangles (faces) of it with half-edge data structure. Then by averaging and normalizing the surrounding faces' normal vectors, we get the unit normal vector of a given vertex. 
+						Flat shading has normal vector per triangle while Gouraud shading and Phong shading has normal vector per vertex. Gouraud shading and Phong shading work better on smoothening surfaces because the per vertex normal vector smoothen the transit both inside and between triangles. To calculate a vertex normal vector from triangle normal vector, we iterated through all neighboring triangles (faces) of it with half-edge data structure. Then by averaging and normalizing the surrounding faces' normal vectors, we get the unit normal vector of a given vertex. 
 					</p>
 					<div class="row">
 						<div class="col-6">
@@ -123,7 +123,7 @@
 				<div class="my-4">
 					<h4><u> Task 4 - Half-Edge Flip</u></h4>
 					<p> <b>Walk-through:</b>
-						The half-edge flip function will flip orientations of an edge that separate two triangles. This operation only re-assigns the pointers, thus it does not involve adding or deleting mesh element. In terms of implementation details, I started by getting references of each half-edge, edge, vertex, and face, with respect to the given edge and its associated half-edge. After getting the references, I re-assign the half-edge pointers of each vertex, edge, and face. Then, for the given input edge's half-edge, I used the "setNeighbors" function to update its properties such as next, twin, vertex, edge, and face. After this operation, the given edge is "flipped". Then, I updated other half-edges with "setNeighbors" accordingly. In addition to that, I filtered out the boundary edge as it makes no sense of flipping an edge that lies on the boundary (as it does not seperate two triangles!). In terms of debugging, I double checked how I reassigned each half-edge/edge/face/vertex to make sure I did not miss something. I also found it helpful to write things down on a paper first before going through detailed pointer manipulation. In general, I did not experience a painful debugging process.
+						The half-edge flip function will flip orientations of an edge that separate two triangles. This operation only re-assigns the pointers, thus it does not involve adding or deleting mesh element. In terms of implementation details, I started by getting references of each half-edge, edge, vertex, and face, with respect to the given edge and its associated half-edge. After getting the references, I re-assign the half-edge pointers of each vertex, edge, and face. Then, for the given input edge's half-edge, I used the "setNeighbors" function to update its properties such as next, twin, vertex, edge, and face. After this operation, the given edge is "flipped". Then, I updated other half-edges with "setNeighbors" accordingly. In addition to that, I filtered out the boundary edge as it makes no sense of flipping an edge that lies on the boundary (as it does not separate two triangles!). In terms of debugging, I double checked how I reassigned each half-edge/edge/face/vertex to make sure I did not miss something. I also found it helpful to write things down on a paper first before going through detailed pointer manipulation. In general, I did not experience a painful debugging process.
 					</p>
 					<div class="row">
 						<div class="col-6">
@@ -141,9 +141,9 @@
 				<div class="my-4">
 					<h4><u> Task 5 - Half-Edge Split</u></h4>
 					<p> <b>Walk-through:</b>
-						Half-Edge splitting provides fundation of future mesh upsampling. Basically, Half-Edge splitting allows us to splitting two triangles into four triangles by inserting a point that lies on the middle of the shared edge and connecting it to the vertices. 
+						Half-Edge splitting provides foundation of future mesh upsampling. Basically, Half-Edge splitting allows us to splitting two triangles into four triangles by inserting a point that lies on the middle of the shared edge and connecting it to the vertices. 
 						<br>
-						In terms of implementation, I started by getting reference of every existing half-edges, vertex, edge, and face, using the given input edge. Then, I create new half-edges,vertices, edges, and faces, because edge-split involves adding elements. This includes allocateing memory for 1 vertex, 3 edges, 2 faces, and 6 half-edges. After getting all references, I reassign the values of them, which is similiar to what I did in half-edge flip. In the original version, I filtered out the boundary edges as well. The biggest challenge here is being extremely careful when re-assigning vales of pointers as it could be easily messed by typo. Similar to what I did in Half-edge Flip, I wrote everything down on the paper and double checked my code.
+						In terms of implementation, I started by getting reference of every existing half-edges, vertex, edge, and face, using the given input edge. Then, I create new half-edges,vertices, edges, and faces, because edge-split involves adding elements. This includes allocating memory for 1 vertex, 3 edges, 2 faces, and 6 half-edges. After getting all references, I reassign the values of them, which is similar to what I did in half-edge flip. In the original version, I filtered out the boundary edges as well. The biggest challenge here is being extremely careful when re-assigning vales of pointers as it could be easily messed by typo. Similar to what I did in Half-edge Flip, I wrote everything down on the paper and double checked my code.
 					</p>
 			
 					<div class="row">
@@ -163,7 +163,7 @@
 					
 					<p class="mt-3"><b>Extra credit:</b>
 						In this part, I altered my function to make it support boundary edges. Unlike Half-edge flip, it makes sense to split boundary edges. In  half-edge flip, we cannot flip edges because flipping involves two triangles that shared one edge. The key of flipping is to change which vertices the edge is connecting. So it doesn't make sense to flip boundary edge. However, in Half-edge split, even though there is only one triangle associated with the boundary edge, we could still find the middle point of the edge and connect it to a vertex, which will split one triangle into half. Thus, it makes sense to do half-edge split on boundary edge. 
-						<br> In terms of implementation, I basically did the same thing I did to the regular edges. The difference is about how to re-assign the value for the triangle that is outside the boundary. As our program has implemented the virtual face, which is a single face that consists of polygon instead of triangle, we could be careful when assigning the "face" value of half-edges. This means that the two half-edges that are on boundary after splitted will have the same face property.
+						<br> In terms of implementation, I basically did the same thing I did to the regular edges. The difference is about how to re-assign the value for the triangle that is outside the boundary. As our program has implemented the virtual face, which is a single face that consists of polygon instead of triangle, we could be careful when assigning the "face" value of half-edges. This means that the two half-edges that are on boundary after split will have the same face property.
 					</p>
 
 					<div class="row">
@@ -198,7 +198,7 @@
 					</div>
 					<p>From the above equation, n  is the number of edges incident to the vertex and u is the condition constant. Before subdividing the original mesh, we computed the position of both new and old vertices and updated all vertex positions after flipping the edges. This is designed in this way because we want to use the original position of each old vertex to calculate the new positions. We updated the position for new and old vertices after flipping the edges. After updating the position of vertices, we finally cleaned up the attributes in every vertex and edge to get them ready for next level’s upsampling.
 					</p>
-					<p><b>Result for NOT pre-split cube: </b>Starting from the upper left cube, the screenshot presents the original cube, level 2, level 3, and level 4 subsampled cube. As we see, after subdivision, the cube gradually becomes more and more smoother on the transitions between sharp corners and edges, resulting in the original cube more like a sphere. We notice that the shape of sharp edges and corners are not preserved when up-sampling. Also, the original symmetrical cube gradually becomes asymmetrical. These happen because different vertices have different degrees and the cubde is not equally spit. Thus when upsampling the cube, numbers of triangles (resolution) at certain positions are significantly higher than others, resulting asymmetrical effect and sharp edge degeneration. To overcome the problem, we can pre-split the original cube before performing the subdivision. 
+					<p><b>Result for NOT pre-split cube: </b>Starting from the upper left cube, the screenshot presents the original cube, level 2, level 3, and level 4 subsampled cube. As we see, after subdivision, the cube gradually becomes more and more smoother on the transitions between sharp corners and edges, resulting in the original cube more like a sphere. We notice that the shape of sharp edges and corners are not preserved when up-sampling. Also, the original symmetrical cube gradually becomes asymmetrical. These happen because different vertices have different degrees and the cube is not equally spit. Thus when upsampling the cube, numbers of triangles (resolution) at certain positions are significantly higher than others, resulting asymmetrical effect and sharp edge degeneration. To overcome the problem, we can pre-split the original cube before performing the subdivision. 
 					</p>
 
 					<div class="row">
@@ -220,7 +220,7 @@
 						</div>
 					</div>
 			
-					<p><b>Result for pre-split cube: </b>Starting from the upper left cube, we first pre-splitted all 16 meshes in the original cube and then conducted subdivision. As we can see, compared with the cube unsampled without pre-splitting, the one with pre-splitting is symmetrical and keeps the shape of the original cube. By pre-splitting the edges, we increased the resolution on the sharp edges and corners leaving more incidences on original vertices and keeping the faces identical with each other. Such a modification before subsampling ensures the symmetric feature even after subdivision several times. 
+					<p><b>Result for pre-split cube: </b>Starting from the upper left cube, we first pre-split all 16 meshes in the original cube and then conducted subdivision. As we can see, compared with the cube upsampled without pre-splitting, the one with pre-splitting is symmetrical and keeps the shape of the original cube. By pre-splitting the edges, we increased the resolution on the sharp edges and corners leaving more incidences on original vertices and keeping the faces identical with each other. Such a modification before subsampling ensures the symmetric feature even after subdivision several times. 
 					</p>
 
 					<div class="row">
@@ -243,7 +243,7 @@
 					</div>
 					
 					
-					<p class="mt-3"><b>Extra credit 1:</b> I altered the function to make it support boundary edges. The main difference of handling boundary edges and regualr edges are 1) take virtual face into account when re-assigning pointers, and 2) the weights of positions are different. The first difference has been handled by the edge-split function, so I will discuss how I implemented the part 2. The new equations/subdivision rule are decribed below.
+					<p class="mt-3"><b>Extra credit 1:</b> I altered the function to make it support boundary edges. The main difference of handling boundary edges and regular edges are 1) take virtual face into account when re-assigning pointers, and 2) the weights of positions are different. The first difference has been handled by the edge-split function, so I will discuss how I implemented the part 2. The new equations/subdivision rule are described below.
 					</p>
 					<div class="row">
 						<div class="col-12">
