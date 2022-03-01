@@ -95,7 +95,7 @@
 				<div class="my-4">
 					<h4><u> Task 3 - Average normals for half-edge meshes</u></h4>
 					<p> <b>Walk-through:</b>
-						To get a smoother normal vector of a given vertex, I iterated through all neiboring triangles (faces) of it with half-edge data structure. By averaging and normalizing the surrounding faces' normal vectors, I get the unit normal vector of a given vertex.
+						Flat shading has normal vector per triangle while Gouraud shading and Phong shading has normal vector per vertex. Gouraud shading and Phong shading work better on smooth surfaces because the per vertex normal vector smoothen the transit both inside and between triangles. To calculate a vertex normal vector from triangle normal vector, we iterated through all neiboring triangles (faces) of it with half-edge data structure. Then by averaging and normalizing the surrounding faces' normal vectors, we get the unit normal vector of a given vertex. 
 					</p>
 					<div class="row">
 						<div class="col-6">
