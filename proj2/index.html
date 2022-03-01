@@ -87,6 +87,10 @@
 					</div>
 				</div>
 
+				<!-- Section 2 -->
+				<div class="mt-2">
+					<h4> Section 2: Triangle Meshes and Half-Edge Data Structure</h4>
+				</div>
 				<!-- Task 3 -->
 				<div class="my-4">
 					<h4><u> Task 3 - Average normals for half-edge meshes</u></h4>
@@ -143,22 +147,18 @@
 					</p>
 			
 					<div class="row">
-						<div class="col-6">
+						<div class="col-4">
 							<img src="assets/Edge_Split_Ori.png" class="mx-auto d-block w-100" alt="sample rate 9">
 							<div class="text-center"> Original Edges</div>
 						</div>
-						<div class="col-6">
+						<div class="col-4">
 							<img src="assets/Edge_Split_Splitted.png" class="mx-auto d-block w-100" alt="Q">
 							<div class="text-center"> Split Edges </div>
 						</div>
-					</div>
-					<div class="row">
-						<div class="col-3"></div>
-						<div class="col-6">
+						<div class="col-4">
 							<img src="assets/Edge_Split_Combo.png" class="mx-auto d-block w-100" alt="sample rate 9">
 							<div class="text-center"> Combination of Flip and Split</div>
 						</div>
-						<div class="col-3"></div>
 					</div>
 					
 					<p class="mt-3"><b>Extra credit:</b>
@@ -176,7 +176,124 @@
 							<div class="text-center"> Split Boundary Edges </div>
 						</div>
 					</div>
+				</div>
 
+				<!-- Task 6 -->
+				<div class="my-4">
+					<h4><u> Task 6 - Loop Subdivision for Mesh Upsampling</u></h4>
+					<p> <b>Walk-through:</b>
+						In our part 6, we converted coarse polygon meshes into higher resolution ones for more accurate simulation and better display by implementing loop subdivisions to upsampling the meshes. The intuition we used is first subdivide each triangle in its meshes into four by defining new edges connected by original edge midpoints. 
+					</p>
+					<div class="row">
+						<div class="col-12">
+							<img src="assets/Subdivision.png" class="mx-auto d-block w-100" alt="sample rate 9">
+						</div>
+					</div>
+					<p>To perform 4-1 subdivisions over all the original meshes, we called the split function we implemented in part 5 to define those mid-points as new vertices and connect those vertices as new edges. As some new edges may connect between an old vertex and a new vertex, we called the flip function implemented in our part 4 to flip those edges. In the flipping process, in order to select the blue edges that connect one new vertex and one old vertex, and not select the black edges that are already on the boundary, we defined binary conditions isNew and isBlack in our edge data structure and assigned value during the split process. For the purpose of updating the position of both old and new vertex, we calculated the new position of the vertex as weighted average of neighboring vertex positions. Both old and new vertex new positions can be calculated from the original old vertex positions according to the following equations and the graph explained.
+					</p>
+					<div class="row">
+						<div class="col-12">
+							<img src="assets/Subdivision_Rule.png" class="mx-auto d-block w-100" alt="sample rate 9">
+						</div>
+					</div>
+					<p>From the above equation, n  is the number of edges incident to the vertex and u is the condition constant. Before subdividing the original mesh, we computed the position of both new and old vertices and updated all vertex positions after flipping the edges. This is designed in this way because we want to use the original position of each old vertex to calculate the new positions. We updated the position for new and old vertices after flipping the edges. After updating the position of vertices, we finally cleaned up the attributes in every vertex and edge to get them ready for next level’s upsampling.
+					</p>
+					<p><b>Result for NOT pre-split cube: </b>Starting from the upper left cube, the screenshot presents the original cube, level 2, level 3, and level 4 subsampled cube. As we see, after subdivision, the cube gradually becomes more and more smoother on the transitions between sharp corners and edges, resulting in the original cube more like a sphere. We notice that the shape of sharp edges and corners are not preserved when up-sampling. Also, the original symmetrical cube gradually becomes asymmetrical. These happen because different vertices have different degrees and the cubde is not equally spit. Thus when upsampling the cube, numbers of triangles (resolution) at certain positions are significantly higher than others, resulting asymmetrical effect and sharp edge degeneration. To overcome the problem, we can pre-split the original cube before performing the subdivision. 
+					</p>
+
+					<div class="row">
+						<div class="col-3">
+							<img src="assets/Upsample_Ori.png" class="mx-auto d-block w-100" alt="sample rate 9">
+							<div class="text-center"> Original Cube</div>
+						</div>
+						<div class="col-3">
+							<img src="assets/Upsample_Level1.png" class="mx-auto d-block" style="width:97%;" alt="sample rate 9">
+							<div class="text-center"> Level 1 Upsample</div>
+						</div>
+						<div class="col-3">
+							<img src="assets/Upsample_Level2.png" class="mx-auto d-block" style="width:95%;" alt="sample rate 9">
+							<div class="text-center"> Level 2 Upsample</div>
+						</div>
+						<div class="col-3">
+							<img src="assets/Upsample_Level3.png" class="mx-auto d-block" style="width:92%;" alt="sample rate 9">
+							<div class="text-center"> Level 3 Upsample</div>
+						</div>
+					</div>
+			
+					<p><b>Result for pre-split cube: </b>Starting from the upper left cube, we first pre-splitted all 16 meshes in the original cube and then conducted subdivision. As we can see, compared with the cube unsampled without pre-splitting, the one with pre-splitting is symmetrical and keeps the shape of the original cube. By pre-splitting the edges, we increased the resolution on the sharp edges and corners leaving more incidences on original vertices and keeping the faces identical with each other. Such a modification before subsampling ensures the symmetric feature even after subdivision several times. 
+					</p>
+
+					<div class="row">
+						<div class="col-3">
+							<img src="assets/Upsample_Split_Ori.png" class="mx-auto d-block w-100" alt="sample rate 9">
+							<div class="text-center"> Pre-split Original Cube</div>
+						</div>
+						<div class="col-3">
+							<img src="assets/Upsample_Split_Level1.png" class="mx-auto d-block w-100" alt="Q">
+							<div class="text-center"> Pre-split Level 1 Upsample </div>
+						</div>
+						<div class="col-3">
+							<img src="assets/Upsample_Split_Level2.png" class="mx-auto d-block w-100" alt="sample rate 9">
+							<div class="text-center"> Pre-split Level 2 Upsample</div>
+						</div>
+						<div class="col-3">
+							<img src="assets/Upsample_Split_Level3.png" class="mx-auto d-block w-100" alt="Q">
+							<div class="text-center"> Pre-split Level 3 Upsample </div>
+						</div>
+					</div>
+					
+					
+					<p class="mt-3"><b>Extra credit 1:</b> I altered the function to make it support boundary edges. The main difference of handling boundary edges and regualr edges are 1) take virtual face into account when re-assigning pointers, and 2) the weights of positions are different. The first difference has been handled by the edge-split function, so I will discuss how I implemented the part 2. The new equations/subdivision rule are decribed below.
+					</p>
+					<div class="row">
+						<div class="col-12">
+							<img src="assets/Subdivision_Rule_Boundary.png" class="mx-auto d-block w-100" alt="sample rate 9">
+						</div>
+					</div>
+					<p class="mt-3">
+						The results are showed below:
+					</p>
+					<div class="row">
+						<div class="col-4">
+							<img src="assets/Upsample_Boundary_Ori.png" class="mx-auto d-block w-100" alt="sample rate 9">
+							<div class="text-center"> Original Beetle</div>
+						</div>
+						<div class="col-4">
+							<img src="assets/Upsample_Boundary_Level1.png" class="mx-auto d-block w-100" alt="Q">
+							<div class="text-center"> Level 1 Upsample Beetle </div>
+						</div>
+						<div class="col-4">
+							<img src="assets/Upsample_Boundary_Level2.png" class="mx-auto d-block w-100" alt="Q">
+							<div class="text-center"> Level 2 Upsample Beetle </div>
+						</div>
+					</div>
+
+					<p class="mt-3"><b>Extra credit 2:</b> In this part I implemented another subdivision schema called "Butterfly Subdivision". Butterfly Subdivision is similar to loop division, but take more neighbors into account when calculating the position of a new vertex. The rules are presented below.
+					</p>
+					<div class="row">
+						<div class="col-1"></div>
+						<div class="col-6">
+							<img src="assets/Subdivision_Butterfly_Rule.png" class="mx-auto d-block w-100" alt="sample rate 9">
+						</div>
+						<div class="col-4">
+							<img src="assets/Subdivision_Butterfly_Rule1.png" class="mx-auto d-block w-100" alt="sample rate 9">
+						</div>
+						<div class="col-1"></div>
+					</div>
+
+					<p class="mt-3">
+						The results are showed below. From these results we could see that Butterfly has a better capability of preserving the shape of sharp edges and corners.
+					</p>
+					<div class="row">
+						<div class="col-6">
+							<img src="assets/Subdivision_Loop.png" class="mx-auto d-block w-100" alt="sample rate 9">
+							<div class="text-center"> Loop Subdivision</div>
+						</div>
+						<div class="col-6">
+							<img src="assets/Subdivision_Butterfly.png" class="mx-auto d-block w-100" alt="Q">
+							<div class="text-center"> Butterfly Subdivision </div>
+						</div>
+					</div>
 				</div>
 
 
