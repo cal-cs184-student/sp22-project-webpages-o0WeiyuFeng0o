@@ -252,54 +252,6 @@
 						As the light is supposed to bounce many times illuminating the areas where light is not directly hitted, therefore, in part 4, we implemented a recursion for at least one bounce of light. The algorithm used Russian Roulette to randomly unbiasedly terminate sampling and reduce the computation time. We first assign the value of L_out to the result of one bounce. Then, we checked whether the max ray depth defining the number of bounces is greater than one. If yes, we create a new ray originated from the hit point and decremented the depth by one. After that, we checked if the new ray intersects with BVH. If yes, we called recursion and checked if the current ray depth is equal to max ray depth. If yes, we compute and accumulate L_out with the result from multiplication of the recursion, BSDF, cosine of the sample direction divided by pdf. In the recursion, we used Russian Roulette to terminate the ray by using a continuation probability of 0.65. If ray depth is greater than one and Russian Roulette passes, we accumulate L_out with multiplication of recursion by using another new ray created with depth decremented by one, bsdf and cosine factor divided by pdf and also the continuation probability.
 					</p>
 				</div>
-				<!-- Q2 -->
-				<div class="my-4">
-					<h4> <u>Outcome</u></h4>
-					<div class="row">
-						<div class="col-6">
-							<img src="assets/p4-CBspheres_lambertian.png" class="mx-auto d-block w-100" alt="normal shading">
-							<div class="text-center">s1024_l Uniform Hemisphere Sampling</div>
-						</div>
-						<div class="col-6">
-							<img src="assets/p3-bunny_64_32.png" class="mx-auto d-block w-100" alt="normal shading">
-							<div class="text-center"> s64_l32 lighting Sampling</div>
-						</div>
-					</div>
-					<div class="row">
-						<div class="col-6">
-							<img src="assets/p3-CBSpheres_H_lambertian.png" class="mx-auto d-block w-100" alt="normal shading">
-							<div class="text-center">s64_l32 Uniform Hemisphere Sampling</div>
-						</div>
-						<div class="col-6">
-							<img src="assets/p3-CBSpheres_lambertian.png" class="mx-auto d-block w-100" alt="normal shading">
-							<div class="text-center"> s64_l32 lighting Sampling</div>
-						</div>
-					</div>
-					<div class="row">
-						<div class="col-3"></div>
-						<div class="col-6">
-							<img src="assets/p3-dragon_64_32.png" class="mx-auto d-block w-100" alt="normal shading">
-							<div class="text-center"> s64_l32 lighting Sampling Dragon</div>
-						</div>
-						<div class="col-3"></div>
-					</div>	
-					<p><b>Analysis:</b>
-						From the above result we could see many difference between uniformly hemisphere sampling and lighting sampling. First of all, hemisphere sampling appears to have more noise on the image compared with lighting sampling. This is understandable as radiance on many directions will be zero as most ray do not hit the light source. Lighting sampling solved this problem by only sampling the points from the light source, and thus produce less-noisy image. Secondly, hemisphere sampling could not render the scene with point light correctly. This is because the probability of having a ray hitting a specific point would extremely low (almost zero), which results in overall zero radiance, and hence a black image. By contrast, lighting sampling could render a point light because it could still samples from the lighting point (although all samples are identical).
-					</p>
-				</div>
-
-				<!-- Q2 -->
-				<div class="my-4">
-					<h4> <u>Outcome</u></h4>
-					<div class="row mb-4">
-						<div class="col-6">
-							<img src="assets/p4-CBspheres_lambertian.png" class="mx-auto d-block w-100" alt="normal shading">
-						</div>
-						<div class="col-6">
-							<img src="assets/p4-m100-CBbunny.png" class="mx-auto d-block w-100" alt="normal shading">
-						</div>
-					</div>
-				</div>
 
 				<div class="my-4">
 					<h4><u>Direct and Indirect Lighting Comparison</u></h4>
