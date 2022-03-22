@@ -15,12 +15,27 @@
 				<!-- Overview -->
 				<div>
 					<h4 class=""><u> Overview </u></h4>
-					<p> In this project I implemented a path-tracer algorithm that could render diffuse objects with global illuminations. I started with naive ray-primitive intersection detection algorithm and improved it BVH structure. Then I calculated direct and indirect illumination with different sampling technics to get the real global illumination. Finally, I reduced the noise of images with adaptive sampling<br>
-					In the <b>part1 "Ray Generation and Scene Intersection"</b>, I sampled rays from camera and calculated the intersection points for different primitives, including triangles and spheres. <br>
-					In the <b>part2 "Bounding Volume Hierarchy"</b>, I optimized the calculation in part1 via a BVH structure to significantly reduce the computational costs. I split primitives using the average of centroids and handled the "all points are split into one side" special case with a "half-half" split. <br>
-					In the <b>part3 "Direct Illumination"</b>, I estimated the direct illumination at a point via two approaches, hemisphere sampling and importance sampling. The previous one generated noisy images while the latter offered smoother result. <br>
-					In the <b>part4 "Indirect Illumination"</b>, I estimated the indirect illumination at a point using the Roulette Monte Carlo over Paths. After this part, I could render pictures with a real global illumination. <br>
-					In the <b>part5 "Adaptive Sampling"</b>, I rendered noise-free images via adaptive sampling approach. With the observation that different pixels require different numbers of sampling to converge, I calculated a 95% confidence interval and stopped sampling if a pixel converges.
+					<p> In this project I implemented a path-tracer algorithm that could render diffuse objects with
+						global illuminations. I started with naive ray-primitive intersection detection algorithm and
+						improved it BVH structure. Then I calculated direct and indirect illumination with different
+						sampling technics to get the real global illumination. Finally, I reduced the noise of images
+						with adaptive sampling<br>
+						In the <b>part1 "Ray Generation and Scene Intersection"</b>, I sampled rays from camera and
+						calculated the intersection points for different primitives, including triangles and spheres.
+						<br>
+						In the <b>part2 "Bounding Volume Hierarchy"</b>, I optimized the calculation in part1 via a BVH
+						structure to significantly reduce the computational costs. I split primitives using the average
+						of centroids and handled the "all points are split into one side" special case with a
+						"half-half" split. <br>
+						In the <b>part3 "Direct Illumination"</b>, I estimated the direct illumination at a point via
+						two approaches, hemisphere sampling and importance sampling. The previous one generated noisy
+						images while the latter offered smoother result. <br>
+						In the <b>part4 "Indirect Illumination"</b>, I estimated the indirect illumination at a point
+						using the Roulette Monte Carlo over Paths. After this part, I could render pictures with a real
+						global illumination. <br>
+						In the <b>part5 "Adaptive Sampling"</b>, I rendered noise-free images via adaptive sampling
+						approach. With the observation that different pixels require different numbers of sampling to
+						converge, I calculated a 95% confidence interval and stopped sampling if a pixel converges.
 				</div>
 				<!-- Section 1 -->
 				<div class="mt-2">
@@ -30,18 +45,37 @@
 				<div class="my-4">
 					<h4> <u>Ray Generation</u></h4>
 					<p> <b>Walk-through:</b>
-						I first implemented a camera ray generation function. This function could generate a ray from camera to a given normalized pixel coordinates. The ray was represented in the world coordinate. <br>
-						To implement this function, I first transformed the input normalized image coordinates x, y from image space to camera space. The normalized image coordinates (0, 0) and (1, 1) were mapped to the bottom left and the top right corner of the sensor in camera space. Thus, I computed the two corners's coordinates according to the figure showed below, where hFov and vFov is the field of view angles along X and Y axis. After knowing the coordinates of the two corners, I could map the normalized image space coordinates into camera space.
+						I first implemented a camera ray generation function. This function could generate a ray from
+						camera to a given normalized pixel coordinates. The ray was represented in the world coordinate.
+						<br>
+						To implement this function, I first transformed the input normalized image coordinates x, y from
+						image space to camera space. The normalized image coordinates (0, 0) and (1, 1) were mapped to
+						the bottom left and the top right corner of the sensor in camera space. Thus, I computed the two
+						corners's coordinates according to the figure showed below, where hFov and vFov is the field of
+						view angles along X and Y axis. After knowing the coordinates of the two corners, I could map
+						the normalized image space coordinates into camera space.
 					</p>
 					<div class="row">
 						<div class="col-12">
-							<img src="assets/camera-image-coordiate.png" class="mx-auto d-block w-100" alt="camera image coordinate transform">
+							<img src="assets/camera-image-coordiate.png" class="mx-auto d-block w-100"
+								alt="camera image coordinate transform">
 						</div>
 					</div>
 					<p>
-						Having image space mapped to camera space, I could generate a ray in camera space given that the camera's origin was one unit vector ahead of the sensor plane along Z axis. The ray would be originated from camera's origin point and pointing to any pixel on the sensor plane. As a ray could be represented as origin + t * direction, now I could represent this ray in camera space. To transform this ray into world space, I multiplied the ray with c2w matrix. Then, as instructed, I normalized the ray direction to make it as a unit vector. Finally, I called the "Ray" function with world space's camera position and normalized ray direction to get the desired representation of the generated ray.<br>
-						
-						Now I had the function that could generate one ray given <b>normalized</b> image space coordinates. To sample rays given an <b>unnormalized</b> pixel coordinates, I called the grid sampler to generate samples and normalized them with respect to image width and height. To calculate the color of the given pixel, I averaged the estimated global illumination of all sample rays.
+						Having image space mapped to camera space, I could generate a ray in camera space given that the
+						camera's origin was one unit vector ahead of the sensor plane along Z axis. The ray would be
+						originated from camera's origin point and pointing to any pixel on the sensor plane. As a ray
+						could be represented as origin + t * direction, now I could represent this ray in camera space.
+						To transform this ray into world space, I multiplied the ray with c2w matrix. Then, as
+						instructed, I normalized the ray direction to make it as a unit vector. Finally, I called the
+						"Ray" function with world space's camera position and normalized ray direction to get the
+						desired representation of the generated ray.<br>
+
+						Now I had the function that could generate one ray given <b>normalized</b> image space
+						coordinates. To sample rays given an <b>unnormalized</b> pixel coordinates, I called the grid
+						sampler to generate samples and normalized them with respect to image width and height. To
+						calculate the color of the given pixel, I averaged the estimated global illumination of all
+						sample rays.
 					</p>
 				</div>
 
@@ -49,17 +83,31 @@
 				<div class="my-4">
 					<h4><u> Ray Triangle Intersection</u></h4>
 					<p><b>Walk-through:</b>
-						From the pipeline's perspective, the primitive intersection algorithm is used to bridge the ray and the scene objects, meaning that it would give information (such as bsdf) about the primitive that a ray hits, so that we could calculate illuminations and perform path tracing. For this task, I implemented a algorithm could determine whether the ray traced hits a triangle and report the nearest intersection point. I used the Möller-Trumbore algorithm for this task. The intuition was utilizing the barycentric coordinate of the triangle and check if the intersection point is inside the triangle. The equations was shown in the following figure, where vector P corresponds to the triangle vertex positions, vector E corresponds to the edges of the triangle and vector D corresponds to the direction of the ray. 
+						From the pipeline's perspective, the primitive intersection algorithm is used to bridge the ray
+						and the scene objects, meaning that it would give information (such as bsdf) about the primitive
+						that a ray hits, so that we could calculate illuminations and perform path tracing. For this
+						task, I implemented a algorithm could determine whether the ray traced hits a triangle and
+						report the nearest intersection point. I used the Möller-Trumbore algorithm for this task. The
+						intuition was utilizing the barycentric coordinate of the triangle and check if the intersection
+						point is inside the triangle. The equations was shown in the following figure, where vector P
+						corresponds to the triangle vertex positions, vector E corresponds to the edges of the triangle
+						and vector D corresponds to the direction of the ray.
 					</p>
 					<div class="row">
 						<div class="col-2"></div>
 						<div class="col-8">
-							<img src="assets/moller_algorithm.png" class="mx-auto d-block w-100" alt="Möller-Trumbore algorithm">
+							<img src="assets/moller_algorithm.png" class="mx-auto d-block w-100"
+								alt="Möller-Trumbore algorithm">
 						</div>
 						<div class="col-2"></div>
 					</div>
 					<p>
-						By solving the above matrix, we can get a result array storing time, barycentric coordinates b1 and b2. If the time, b1, b2 and 1-b1-b2 is valid(t is within ray time range, three barycentric coordinates are greater than 0 but less than 1), then we can confirm it is an intersection and update the max travel time of the ray. With valid barycentric coordinates (1-b1-b2, b1, b2), we can then solve the above equation and store the information of t, surface normal n, type of primitive hit, and also bsdf at the intersection by using the pointer. 
+						By solving the above matrix, we can get a result array storing time, barycentric coordinates b1
+						and b2. If the time, b1, b2 and 1-b1-b2 is valid(t is within ray time range, three barycentric
+						coordinates are greater than 0 but less than 1), then we can confirm it is an intersection and
+						update the max travel time of the ray. With valid barycentric coordinates (1-b1-b2, b1, b2), we
+						can then solve the above equation and store the information of t, surface normal n, type of
+						primitive hit, and also bsdf at the intersection by using the pointer.
 					</p>
 				</div>
 
@@ -85,7 +133,26 @@
 				<div class="my-4">
 					<h4> <u>BVH Construction</u></h4>
 					<p><b>Walk-through:</b>
-						Bounding Volume Hierarchy is a bounding box structure allowing us to test ray intersection with axis-aligned planes instead of testing each primitives in the scene. In the construction_bvh function, we checked whether the node is a leaf node by comparing the number of the primitives (calculated by iterator end - start) with the input max_leaf_size. if the number is smaller than the max_leaf_size, we treated it as a leaf node. For the leaf node, we simply stores its bounding box and primitives. If the number of primitives is larger than the max_leaf_size, we treat the node as an interior node. For interior nodes, we need to split primitives into two children nodes. To maximize the BVH performance, we choose the sparsest axis (the axis that has the largest distance denoted by max - min) among x,y,z to split the object. And we decided to use the average centroid along the picked axis as the split point. Now given the heuristic we chose for picking splitting point, we called the std::partition function to split primitives into two sets. This function returned an iterator "mid" pointing to the start of the latter set. With this mid iterator, we could finally call the construct_bvh with start and mid as input to construct the left child node. Similarly, we could use mid and end as input to construct the right child node. Besides this general logic, we needed to consider special case where all primitives are split into one child node. In this case, we will end up with an infinite loop as mid will equal to either start or end, and hence no progress is made. To handle this special case, we used a different heuristic for splitting primitives. For simplicity, we used a "half-half" split rule (half of the primitives go to left child node, and the other half go to right child node) in this case.
+						Bounding Volume Hierarchy is a bounding box structure allowing us to test ray intersection with
+						axis-aligned planes instead of testing each primitives in the scene. In the construction_bvh
+						function, we checked whether the node is a leaf node by comparing the number of the primitives
+						(calculated by iterator end - start) with the input max_leaf_size. if the number is smaller than
+						the max_leaf_size, we treated it as a leaf node. For the leaf node, we simply stores its
+						bounding box and primitives. If the number of primitives is larger than the max_leaf_size, we
+						treat the node as an interior node. For interior nodes, we need to split primitives into two
+						children nodes. To maximize the BVH performance, we choose the sparsest axis (the axis that has
+						the largest distance denoted by max - min) among x,y,z to split the object. And we decided to
+						use the average centroid along the picked axis as the split point. Now given the heuristic we
+						chose for picking splitting point, we called the std::partition function to split primitives
+						into two sets. This function returned an iterator "mid" pointing to the start of the latter set.
+						With this mid iterator, we could finally call the construct_bvh with start and mid as input to
+						construct the left child node. Similarly, we could use mid and end as input to construct the
+						right child node. Besides this general logic, we needed to consider special case where all
+						primitives are split into one child node. In this case, we will end up with an infinite loop as
+						mid will equal to either start or end, and hence no progress is made. To handle this special
+						case, we used a different heuristic for splitting primitives. For simplicity, we used a
+						"half-half" split rule (half of the primitives go to left child node, and the other half go to
+						right child node) in this case.
 					</p>
 					<div class="row">
 						<div class="col-2"></div>
@@ -98,14 +165,25 @@
 				<div class="my-4">
 					<h4> <u>BVH Intersection</u></h4>
 					<p><b>Walk-through:</b>
-						We used bounding boxes to accelerate the test of whether a ray intersects with the primitives. First we computed the first and last time of the ray intersecting with the largest box. Then, we updated the max and min time of the ray if it intersects the bounding box within the lifetime range of the ray. The following graphs show the intuition to calculate the min and max intersecting time.
+						We used bounding boxes to accelerate the test of whether a ray intersects with the primitives.
+						First we computed the first and last time of the ray intersecting with the largest box. Then, we
+						updated the max and min time of the ray if it intersects the bounding box within the lifetime
+						range of the ray. The following graphs show the intuition to calculate the min and max
+						intersecting time.
 					</p>
 					<div class="row">
 						<div class="col-12">
 							<img src="assets/Intersection.png" class="mx-auto d-block w-100" alt="intersection">
 						</div>
 					</div>
-					<p>Next, we checked whether the ray hits the primitives’ bounding boxes. If the ray intersects the bounding box, we check whether the bounding box is a leaf node or not. If it is a leaf node , we iterate through each primitives in the bounding box and check whether there is any intersection. If it is not a leaf node, we recursively call the BVH intersect function to check the left and right child. While different from BVH has_intersect function, BVH intersect function also reports the nearest intersection via input Intersection *i. We used a bool value set to false before iterating through all primitives and updated its value in each iteration across primitives to keep track of whether or not there already exists an intersection. </p>
+					<p>Next, we checked whether the ray hits the primitives’ bounding boxes. If the ray intersects the
+						bounding box, we check whether the bounding box is a leaf node or not. If it is a leaf node , we
+						iterate through each primitives in the bounding box and check whether there is any intersection.
+						If it is not a leaf node, we recursively call the BVH intersect function to check the left and
+						right child. While different from BVH has_intersect function, BVH intersect function also
+						reports the nearest intersection via input Intersection *i. We used a bool value set to false
+						before iterating through all primitives and updated its value in each iteration across
+						primitives to keep track of whether or not there already exists an intersection. </p>
 				</div>
 				<!-- Q2 -->
 				<div class="my-4">
@@ -158,7 +236,18 @@
 						</div>
 					</div>
 					<p><b>Analysis:</b>
-						Here we present a comparison between rendering time with and without using BVH Hierarchy. We could see that our bvh structure reduced the rendering time of cow.dae from 51s to 0.17s, which is 300x faster. Similarly, the bvh reduced rendeirng time of teampot.dae from 17s to 0.15s and that of beetle.dae from 66s to 0.13s. We noticed that the original algorithm without using bvh is very sensitive to geometric complicity. As these .dae files have different complicity, we could see significant increase of rendering time when not using bvh. In contrary, algorithm using bvh structure treat these files of different geometric complexity almost equally. All of them are rendered in about 0.15s. In a nutshell, BVH could significantly speed up the rendering process, and hence we could use it to render files of extremely complex geometries, like human body or faces.  Such a boost in rendering speed is caused by only checking primitives in bounding boxes that are intersected with rays. By implementing BVH algorithm, the time complexity is reduced from O(n) to O(log(n)).
+						Here we present a comparison between rendering time with and without using BVH Hierarchy. We
+						could see that our bvh structure reduced the rendering time of cow.dae from 51s to 0.17s, which
+						is 300x faster. Similarly, the bvh reduced rendeirng time of teampot.dae from 17s to 0.15s and
+						that of beetle.dae from 66s to 0.13s. We noticed that the original algorithm without using bvh
+						is very sensitive to geometric complicity. As these .dae files have different complicity, we
+						could see significant increase of rendering time when not using bvh. In contrary, algorithm
+						using bvh structure treat these files of different geometric complexity almost equally. All of
+						them are rendered in about 0.15s. In a nutshell, BVH could significantly speed up the rendering
+						process, and hence we could use it to render files of extremely complex geometries, like human
+						body or faces. Such a boost in rendering speed is caused by only checking primitives in bounding
+						boxes that are intersected with rays. By implementing BVH algorithm, the time complexity is
+						reduced from O(n) to O(log(n)).
 					</p>
 				</div>
 
@@ -171,10 +260,28 @@
 				<div class="my-4">
 					<h4> <u>Two Direct Lighting Functions</u></h4>
 					<p><b>Walk-through:</b>
-						For part 3, we implemented two direct lighting estimation algorithms, which are  uniform hemisphere sampling and importance sampling. In general, the irradiance estimations are calculated using Monte Carlo Integration. <br>
-						<b>For uniform hemisphere sampling</b>, we first used a vector sample (dw) of unit hemisphere and converted it from object coordinates to world coordinates. Then, we generated a ray by using the sample as the ray's direction  and adding the sample vector to the hit point as the origin of the ray. If the ray intersects BVH, we get the material's emitted light. After that, in order to transform its radiance to irradiance, we multiply it by bsdf and the cosine of the sample vector of the unit hemisphere. As we uniformly sampled the hemisphere, the pdf used here is a constant equal to 1/(2*PI), we return the accumulated result from all samples multiplied by 2*PI and divided by the number of samples. <br>
-						
-						<b>For importance sampling implementation</b>, we need to sample every light source in the scene. We first iterate through all the lights in the scene. If the light is delta light, we only need to sample it once as all samples are identical. If the light is not delta light, we sample the light for the number of samples. By creating samples, we get the radiance, pdf, sampled direction, and also the distance from the hit point to the light. Then, we converted the direction vector from world coordinates to object coordinates. After that, we checked if the converted direction vector's z coordinate is greater than zero as only light in front of the object is visible. If it passes the check, we create a shadow ray originated from the hit point. If the shadow ray is not intersected with BVH, we accumulate the irradiance at the hit point similar to uniform hemisphere sampling and finally average the result by the number of samples. 
+						For part 3, we implemented two direct lighting estimation algorithms, which are uniform
+						hemisphere sampling and importance sampling. In general, the irradiance estimations are
+						calculated using Monte Carlo Integration. <br>
+						<b>For uniform hemisphere sampling</b>, we first used a vector sample (dw) of unit hemisphere
+						and converted it from object coordinates to world coordinates. Then, we generated a ray by using
+						the sample as the ray's direction and adding the sample vector to the hit point as the origin of
+						the ray. If the ray intersects BVH, we get the material's emitted light. After that, in order to
+						transform its radiance to irradiance, we multiply it by bsdf and the cosine of the sample vector
+						of the unit hemisphere. As we uniformly sampled the hemisphere, the pdf used here is a constant
+						equal to 1/(2*PI), we return the accumulated result from all samples multiplied by 2*PI and
+						divided by the number of samples. <br>
+
+						<b>For importance sampling implementation</b>, we need to sample every light source in the
+						scene. We first iterate through all the lights in the scene. If the light is delta light, we
+						only need to sample it once as all samples are identical. If the light is not delta light, we
+						sample the light for the number of samples. By creating samples, we get the radiance, pdf,
+						sampled direction, and also the distance from the hit point to the light. Then, we converted the
+						direction vector from world coordinates to object coordinates. After that, we checked if the
+						converted direction vector's z coordinate is greater than zero as only light in front of the
+						object is visible. If it passes the check, we create a shadow ray originated from the hit point.
+						If the shadow ray is not intersected with BVH, we accumulate the irradiance at the hit point
+						similar to uniform hemisphere sampling and finally average the result by the number of samples.
 					</p>
 				</div>
 				<!-- Q2 -->
@@ -192,11 +299,13 @@
 					</div>
 					<div class="row">
 						<div class="col-6">
-							<img src="assets/p3-CBSpheres_H_lambertian.png" class="mx-auto d-block w-100" alt="normal shading">
+							<img src="assets/p3-CBSpheres_H_lambertian.png" class="mx-auto d-block w-100"
+								alt="normal shading">
 							<div class="text-center">s64_l32 Uniform Hemisphere Sampling</div>
 						</div>
 						<div class="col-6">
-							<img src="assets/p3-CBSpheres_lambertian.png" class="mx-auto d-block w-100" alt="normal shading">
+							<img src="assets/p3-CBSpheres_lambertian.png" class="mx-auto d-block w-100"
+								alt="normal shading">
 							<div class="text-center"> s64_l32 lighting Sampling</div>
 						</div>
 					</div>
@@ -207,9 +316,18 @@
 							<div class="text-center"> s64_l32 lighting Sampling Dragon</div>
 						</div>
 						<div class="col-3"></div>
-					</div>	
+					</div>
 					<p><b>Analysis:</b>
-						From the above result we could see many difference between uniformly hemisphere sampling and lighting sampling. First of all, hemisphere sampling appears to have more noise on the image compared with lighting sampling. This is understandable as radiance on many directions will be zero as most ray do not hit the light source. Lighting sampling solved this problem by only sampling the points from the light source, and thus produce less-noisy image. Secondly, hemisphere sampling could not render the scene with point light correctly. This is because the probability of having a ray hitting a specific point would extremely low (almost zero), which results in overall zero radiance, and hence a black image. By contrast, lighting sampling could render a point light because it could still samples from the lighting point (although all samples are identical).
+						From the above result we could see many difference between uniformly hemisphere sampling and
+						lighting sampling. First of all, hemisphere sampling appears to have more noise on the image
+						compared with lighting sampling. This is understandable as radiance on many directions will be
+						zero as most ray do not hit the light source. Lighting sampling solved this problem by only
+						sampling the points from the light source, and thus produce less-noisy image. Secondly,
+						hemisphere sampling could not render the scene with point light correctly. This is because the
+						probability of having a ray hitting a specific point would extremely low (almost zero), which
+						results in overall zero radiance, and hence a black image. By contrast, lighting sampling could
+						render a point light because it could still samples from the lighting point (although all
+						samples are identical).
 					</p>
 				</div>
 				<!-- Q3 -->
@@ -217,29 +335,35 @@
 					<h4> <u>Importance Sampling Rate Comparison</u></h4>
 					<div class="row">
 						<div class="col-6">
-							<img src="assets/p3-CBSpheres_lambertian_l1.png" class="mx-auto d-block w-100" alt="normal shading">
+							<img src="assets/p3-CBSpheres_lambertian_l1.png" class="mx-auto d-block w-100"
+								alt="normal shading">
 							<div class="text-center">s1_l1 lighting Sampling</div>
 						</div>
 						<div class="col-6">
-							<img src="assets/p3-CBSpheres_lambertian_l4.png" class="mx-auto d-block w-100" alt="normal shading">
+							<img src="assets/p3-CBSpheres_lambertian_l4.png" class="mx-auto d-block w-100"
+								alt="normal shading">
 							<div class="text-center"> s1_l4 lighting Sampling</div>
 						</div>
 					</div>
 					<div class="row">
 						<div class="col-6">
-							<img src="assets/p3-CBSpheres_lambertian_l16.png" class="mx-auto d-block w-100" alt="normal shading">
+							<img src="assets/p3-CBSpheres_lambertian_l16.png" class="mx-auto d-block w-100"
+								alt="normal shading">
 							<div class="text-center">s1_l16 lighting Sampling</div>
 						</div>
 						<div class="col-6">
-							<img src="assets/p3-CBSpheres_lambertian_l64.png" class="mx-auto d-block w-100" alt="normal shading">
+							<img src="assets/p3-CBSpheres_lambertian_l64.png" class="mx-auto d-block w-100"
+								alt="normal shading">
 							<div class="text-center"> s1_l64 lighting Sampling</div>
 						</div>
 					</div>
 					<p><b>Analysis:</b>
-						We could see that the soft shadow is less noisy as the light sampling rate goes up. The picture rendered with s-1 l-1 has very significant level of noise where the picture rendered with s-1 l-64 has very little noise.
+						We could see that the soft shadow is less noisy as the light sampling rate goes up. The picture
+						rendered with s-1 l-1 has very significant level of noise where the picture rendered with s-1
+						l-64 has very little noise.
 					</p>
 				</div>
-				
+
 
 				<!-- part 4 -->
 				<div class="mt-2">
@@ -249,7 +373,19 @@
 				<div class="my-4">
 					<h4> <u>Indirect Lighting</u></h4>
 					<p><b>Walk-through:</b>
-						As the light is supposed to bounce many times illuminating the areas where light is not directly hitted, therefore, in part 4, we implemented a recursion for at least one bounce of light. The algorithm used Russian Roulette to randomly unbiasedly terminate sampling and reduce the computation time. We first assign the value of L_out to the result of one bounce. Then, we checked whether the max ray depth defining the number of bounces is greater than one. If yes, we create a new ray originated from the hit point and decremented the depth by one. After that, we checked if the new ray intersects with BVH. If yes, we called recursion and checked if the current ray depth is equal to max ray depth. If yes, we compute and accumulate L_out with the result from multiplication of the recursion, BSDF, cosine of the sample direction divided by pdf. In the recursion, we used Russian Roulette to terminate the ray by using a continuation probability of 0.65. If ray depth is greater than one and Russian Roulette passes, we accumulate L_out with multiplication of recursion by using another new ray created with depth decremented by one, bsdf and cosine factor divided by pdf and also the continuation probability.
+						As the light is supposed to bounce many times illuminating the areas where light is not directly
+						hitted, therefore, in part 4, we implemented a recursion for at least one bounce of light. The
+						algorithm used Russian Roulette to randomly unbiasedly terminate sampling and reduce the
+						computation time. We first assign the value of L_out to the result of one bounce. Then, we
+						checked whether the max ray depth defining the number of bounces is greater than one. If yes, we
+						create a new ray originated from the hit point and decremented the depth by one. After that, we
+						checked if the new ray intersects with BVH. If yes, we called recursion and checked if the
+						current ray depth is equal to max ray depth. If yes, we compute and accumulate L_out with the
+						result from multiplication of the recursion, BSDF, cosine of the sample direction divided by
+						pdf. In the recursion, we used Russian Roulette to terminate the ray by using a continuation
+						probability of 0.65. If ray depth is greater than one and Russian Roulette passes, we accumulate
+						L_out with multiplication of recursion by using another new ray created with depth decremented
+						by one, bsdf and cosine factor divided by pdf and also the continuation probability.
 					</p>
 				</div>
 
@@ -258,7 +394,8 @@
 					<h4> <u>Outcome</u></h4>
 					<div class="row mb-4">
 						<div class="col-6">
-							<img src="assets/p4-CBspheres_lambertian.png" class="mx-auto d-block w-100" alt="normal shading">
+							<img src="assets/p4-CBspheres_lambertian.png" class="mx-auto d-block w-100"
+								alt="normal shading">
 						</div>
 						<div class="col-6">
 							<img src="assets/p4-m100-CBbunny.png" class="mx-auto d-block w-100" alt="normal shading">
@@ -279,7 +416,14 @@
 						</div>
 					</div>
 					<p><b>Analysis:</b>
-						From the comparison we see that only direct lighting has a black ceiling where only indirect lighting has a black light source area. The direct lighting contains the zero-bounce and one-bounce, which will only render the light source and the object that directly exposed to light source. By contrast, the indirect lighting contains everything else than zero-bounce and one-bounce, which are the light that are reflected by objects. Thus, the ceiling is rendered blight in only indirect lighting as it only exposed to the light reflected by other objects in the scene. Also, as the indirect lighting do not account for one-bounce illuminance, it will look much darker.
+						From the comparison we see that only direct lighting has a black ceiling where only indirect
+						lighting has a black light source area. The direct lighting contains the zero-bounce and
+						one-bounce, which will only render the light source and the object that directly exposed to
+						light source. By contrast, the indirect lighting contains everything else than zero-bounce and
+						one-bounce, which are the light that are reflected by objects. Thus, the ceiling is rendered
+						blight in only indirect lighting as it only exposed to the light reflected by other objects in
+						the scene. Also, as the indirect lighting do not account for one-bounce illuminance, it will
+						look much darker.
 					</p>
 				</div>
 
@@ -307,10 +451,17 @@
 						<div class="col-4">
 							<img src="assets/p4-m100-CBbunny.png" class="mx-auto d-block w-100" alt="normal shading">
 							<div class="text-center"> m = 100 </div>
-						</div>	
+						</div>
 					</div>
 					<p><b>Analysis:</b>
-						From the comparison of images with m equal to 0, 1, 2, 3, and 100, we can see that as the max ray depth increases the image becomes brighter. From zero bounce, we can only see the light from the light source. With one bounce, the image generated is identical with the image we rendered in part 3. As the bounce time is greater than one, the image is getting  brighter, since the areas where are not directly hit by the light are illuminated by the reflectance of light from areas where are directly hit by light source. As we were using a continuation probability and Russian Roulette, setting a large max depth for rays (e.g. one hundred) may not significantly increase the image quality or the computational costs. 
+						From the comparison of images with m equal to 0, 1, 2, 3, and 100, we can see that as the max
+						ray depth increases the image becomes brighter. From zero bounce, we can only see the light from
+						the light source. With one bounce, the image generated is identical with the image we rendered
+						in part 3. As the bounce time is greater than one, the image is getting brighter, since the
+						areas where are not directly hit by the light are illuminated by the reflectance of light from
+						areas where are directly hit by light source. As we were using a continuation probability and
+						Russian Roulette, setting a large max depth for rays (e.g. one hundred) may not significantly
+						increase the image quality or the computational costs.
 					</p>
 				</div>
 
@@ -330,7 +481,7 @@
 							<div class="text-center"> s = 4 </div>
 						</div>
 					</div>
-					<div class="row">	
+					<div class="row">
 						<div class="col-4">
 							<img src="assets/p4-s8-bunny.png" class="mx-auto d-block w-100" alt="normal shading">
 							<div class="text-center"> s = 8 </div>
@@ -338,11 +489,11 @@
 						<div class="col-4">
 							<img src="assets/p4-s16-bunny.png" class="mx-auto d-block w-100" alt="normal shading">
 							<div class="text-center"> s = 16 </div>
-						</div>	
+						</div>
 						<div class="col-4">
 							<img src="assets/p4-s64-bunny.png" class="mx-auto d-block w-100" alt="normal shading">
 							<div class="text-center"> s = 64 </div>
-						</div>	
+						</div>
 					</div>
 					<div class="row">
 						<div class="col-3"></div>
@@ -353,7 +504,8 @@
 						<div class="col-3"></div>
 					</div>
 					<p><b>Analysis:</b>
-						From the results, we see that increase sample rate will significantly reduce the noise level of the rendered image.
+						From the results, we see that increase sample rate will significantly reduce the noise level of
+						the rendered image.
 					</p>
 				</div>
 
@@ -366,11 +518,20 @@
 				<div class="my-4">
 					<h4> <u>Adaptive Sampling Algorithm</u></h4>
 					<p><b>Walk-through:</b>
-						In part 5, we further optimized our rendering speed by applying adaptive sampling instead of using a fixed sampling rate, adaptive sampling. As adaptive sampling adjusts the sampling rate based on whether a pixel converges, this method can save the time rendering the pixels which converge faster than the others. In our implementation, we checked whether the pixel converges or not with the following condition where I = 1.96 * σ/ sqrt(n), maxTolerance is a constant equal to 0.05, and μ is mean. For every batch sample such as 32 or 64, we check the condition. If the condition passes, we say that the pixel converges and breaks the sampling loop. We then updated our sample count buffer with the sampling rate at the point of convergence and divide the result by the updated sample rate.
+						In part 5, we further optimized our rendering speed by applying adaptive sampling instead of
+						using a fixed sampling rate, adaptive sampling. As adaptive sampling adjusts the sampling rate
+						based on whether a pixel converges, this method can save the time rendering the pixels which
+						converge faster than the others. In our implementation, we checked whether the pixel converges
+						or not with the following condition where I = 1.96 * σ/ sqrt(n), maxTolerance is a constant
+						equal to 0.05, and μ is mean. For every batch sample such as 32 or 64, we check the condition.
+						If the condition passes, we say that the pixel converges and breaks the sampling loop. We then
+						updated our sample count buffer with the sampling rate at the point of convergence and divide
+						the result by the updated sample rate.
 					</p>
-					
 				</div>
-				<h4> <u>Outcome</u></h4>
+				
+				<div class="my-4">
+					<h4> <u>Outcome</u></h4>
 					<div class="row mb-4">
 						<div class="col-6">
 							<img src="assets/p5-bunny.png" class="mx-auto d-block w-100" alt="normal shading">
@@ -379,12 +540,13 @@
 						<div class="col-6">
 							<img src="assets/p5-bunny_rate.png" class="mx-auto d-block w-100" alt="normal shading">
 							<div class="text-center"> sampling rate on different pixels</div>
-						</div>			
+						</div>
 					</div>
 				</div>
 
 
-				<p> <b>Link to the website: </b>https://cal-cs184-student.github.io/sp22-project-webpages-o0WeiyuFeng0o/proj3-1/index.html</p>
+				<p> <b>Link to the website:
+					</b>https://cal-cs184-student.github.io/sp22-project-webpages-o0WeiyuFeng0o/proj3-1/index.html</p>
 			</div>
 			<!-- right margin -->
 			<div class="col-2 m-0 p-0"></div>
