@@ -278,6 +278,9 @@
 							<div class="text-center"> Only Indirect Lighting </div>
 						</div>
 					</div>
+					<p><b>Analysis:</b>
+						From the comparison we see that only direct lighting has a black ceiling where only indirect lighting has a black light source area. The direct lighting contains the zero-bounce and one-bounce, which will only render the light source and the object that directly exposed to light source. By contrast, the indirect lighting contains everything else than zero-bounce and one-bounce, which are the light that are reflected by objects. Thus, the ceiling is rendered blight in only indirect lighting as it only exposed to the light reflected by other objects in the scene. Also, as the indirect lighting do not account for one-bounce illuminance, it will look much darker.
+					</p>
 				</div>
 
 				<div class="my-4">
@@ -306,6 +309,9 @@
 							<div class="text-center"> m = 100 </div>
 						</div>	
 					</div>
+					<p><b>Analysis:</b>
+						From the comparison of images with m equal to 0, 1, 2, 3, and 100, we can see that as the max ray depth increases the image becomes brighter. From zero bounce, we can only see the light from the light source. With one bounce, the image generated is identical with the image we rendered in part 3. As the bounce time is greater than one, the image is getting  brighter, since the areas where are not directly hit by the light are illuminated by the reflectance of light from areas where are directly hit by light source. As we were using a continuation probability and Russian Roulette, setting a large max depth for rays (e.g. one hundred) may not significantly increase the image quality or the computational costs. 
+					</p>
 				</div>
 
 				<div class="my-4">
@@ -346,6 +352,9 @@
 						</div>
 						<div class="col-3"></div>
 					</div>
+					<p><b>Analysis:</b>
+						From the results, we see that increase sample rate will significantly reduce the noise level of the rendered image.
+					</p>
 				</div>
 
 
@@ -357,8 +366,9 @@
 				<div class="my-4">
 					<h4> <u>Adaptive Sampling Algorithm</u></h4>
 					<p><b>Walk-through:</b>
-						In part 5, we further optimized our rendering speed by applying adaptive sampling instead of using a fixed sampling rate, adaptive sampling. As adaptive sampling adjusts the sampling rate based on whether a pixel converges, this method can save the time rendering the pixels which converge faster than the others. In our implementation, we checked whether the pixel converges or not with the following condition where I = 1.96 * σ/ sqrt(n), maxTolerance is a constant equal to 0.05, and μ is mean. 
+						In part 5, we further optimized our rendering speed by applying adaptive sampling instead of using a fixed sampling rate, adaptive sampling. As adaptive sampling adjusts the sampling rate based on whether a pixel converges, this method can save the time rendering the pixels which converge faster than the others. In our implementation, we checked whether the pixel converges or not with the following condition where I = 1.96 * σ/ sqrt(n), maxTolerance is a constant equal to 0.05, and μ is mean. For every batch sample such as 32 or 64, we check the condition. If the condition passes, we say that the pixel converges and breaks the sampling loop. We then updated our sample count buffer with the sampling rate at the point of convergence and divide the result by the updated sample rate.
 					</p>
+					
 				</div>
 				<h4> <u>Outcome</u></h4>
 					<div class="row mb-4">
