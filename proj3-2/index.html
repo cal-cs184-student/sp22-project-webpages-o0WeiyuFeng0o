@@ -1,7 +1,190 @@
 <html>
-	<head>
-	</head>
-	<body>
-		Project 3-2 here
-	</body>
+
+<head>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+		integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+</head>
+
+<body class="py-5">
+	<h2 class="text-center mb-5">Project 3 - <span class="inline text-danger">Pathtracer-2</span></h2>
+	<div class="container">
+		<div class="row">
+			<!-- left margin -->
+			<div class="col-2 m-0 p-0"></div>
+			<!-- Content -->
+			<div class="col-8 p-0 m-0">
+				<!-- Overview -->
+				<div>
+					<h4 class=""><u> Overview </u></h4>
+					<p> In this project, I extended the path-tracer and implemented materials like mirror (perfect specular reflection), glass (refraction), and metals (microfacet model). By rendering and analyzing scenes rendered with mirror and glass material, I understood how path-tracing work in each bounce. In addition, I augmented my understanding of importance sampling via rendering metal materials.<br>
+				</div>
+		
+				<!-- Task 1 -->
+				<div class="my-4">
+					<h4> <u>Part 1 - Mirror and Glass Materials</u></h4>
+					<p> <b>Walk-through:</b>
+						For this part, we implemented two new materials: mirror and glass. Here we assumed mirror mirror materials had perfect specular refraction. In other words, we assumed they were ideal mirror. We reflected the wo vector around the normal vector (0,0,1) in the object space to calculate the wi. Then, as the probability of sampling a light from a certain direction is 0, we simply set pdf to 1.0 and returned the reflectance. Because perfect mirror do not exhibit light fall off, we divided the reflectance by the cosine factor to cancel out the multiplication happened in the later part. In terms of implementing glass material, we implemented both reflection and refraction function, and used Schlick's approximation to calculate the ratio of the reflection energy to the refraction energy. As we could only return one ray as output of the function, we sampled the lights and used the ratio as the probability. Inside the refraction function, we used Snell's Law to determine the occurrence of total internal reflection. The below images were rendered with 64 samples per pixel and 4 samples per light.
+					</p>
+					<h4> <u>Outcome</u></h4>
+					<div class="row">
+						<div class="col-6">
+							<img src="assets/m=0.png" class="mx-auto d-block w-100" alt="m=0">
+							<div class="text-center"> m=0</div>
+						</div>
+						<div class="col-6">
+							<img src="assets/m=1.png" class="mx-auto d-block w-100" alt="m=1">
+							<div class="text-center"> m=1</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-6">
+							<img src="assets/m=2.png" class="mx-auto d-block w-100" alt="m=2">
+							<div class="text-center"> m=2</div>
+						</div>
+						<div class="col-6">
+							<img src="assets/m=3.png" class="mx-auto d-block w-100" alt="m=3">
+							<div class="text-center"> m=3</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-4">
+							<img src="assets/m=4.png" class="mx-auto d-block w-100" alt="m=2">
+							<div class="text-center"> m=4</div>
+						</div>
+						<div class="col-4">
+							<img src="assets/m=5.png" class="mx-auto d-block w-100" alt="m=3">
+							<div class="text-center"> m=5</div>
+						</div>
+						<div class="col-4">
+							<img src="assets/m=100.png" class="mx-auto d-block w-100" alt="m=3">
+							<div class="text-center"> m=100</div>
+						</div>
+					</div>
+				</div>
+				<h4> <u>Analysis</u></h4>
+				<p>
+					<b>When m = 0</b>, we could only see the light source. <br>
+					<b>When m = 1</b>, the light will bounce from the objects' surface to the camera. So we could see diffuse objects like wall and ground. Also, from the left ball (which possesses mirror material), we could see that the light from light source hit the ball and is reflected to the camera. From the right ball (glass material), we could see that part of the light is reflected. Since we only have 1 bounces here, the refracted light will not be seen. Thus, we see a dimmer spot.
+				</p>
+				<div class="row">
+					<div class="col-6">
+						<img src="assets/m=0.png" class="mx-auto d-block w-100" alt="m=0">
+						<div class="text-center"> m=0</div>
+					</div>
+					<div class="col-6">
+						<img src="assets/m=1-path.png" class="mx-auto d-block w-100" alt="m=1">
+						<div class="text-center"> m=1</div>
+					</div>
+				</div>
+				<p>
+					<b>When m = 2</b>, the second bounce was added. we could see the left ball reflected the environment shown from the last bounce. Also, we could see the environment are reflected on the right ball. Several light path are shown below. <br>
+					<b>When m = 3</b>, we could see the refraction. The environment was refracted in the right ball. Also, we could see the light refracted through the right ball and had a shiny spot on the ground.
+				</p>
+				<div class="row">
+					<div class="col-6">
+						<img src="assets/m=2-path.png" class="mx-auto d-block w-100" alt="m=2">
+						<div class="text-center"> m=2</div>
+					</div>
+					<div class="col-6">
+						<img src="assets/m=3-path.png" class="mx-auto d-block w-100" alt="m=3">
+						<div class="text-center"> m=3</div>
+					</div>
+				</div>
+				<p>
+					<b>When m = 4</b>, We could see the spot on the ground now reflected back toward the ball. So we could see that the bottom of the ball became shinny. These light were also reflected toward the blue wall and left a shiny spot on the wall. In addition, as the left ball reflected the scene we saw in the last bounce, we could see that the reflected right ball became brighter and had the shiny spot below it.<br>
+					<b>When m = 5 and 100</b>, the scene was slightly brighter as there were more bounces of the light. This was easier to observe by comparing brightness of shadows.
+				</p>
+				<div class="row">
+					<div class="col-6">
+						<img src="assets/m=4-path.png" class="mx-auto d-block w-100" alt="m=2">
+						<div class="text-center"> m=4</div>
+					</div>
+					<div class="col-6">
+						<img src="assets/m=100.png" class="mx-auto d-block w-100" alt="m=3">
+						<div class="text-center"> m=100</div>
+					</div>
+				</div>
+
+				
+				<!-- Task 2 -->
+				<div class="my-4">
+					<h4><u> Part 2 - Microfacet Materials</u></h4>
+					<p> <b>Walk-through:</b>
+						For part 2, we implemented a microfacet material model, enabling us to render metallic materials. In our algorithm, we calculated the normal distribution function and Fresnel value according to material's alpha value which determines the material surface roughness.
+					</p>
+					<h4> <u>Outcome</u></h4>
+					<div class="row">
+						<div class="col-6">
+							<img src="assets/importance.png" class="mx-auto d-block w-100" alt="m=1">
+							<div class="text-center"> bunny</div>
+						</div>
+						<div class="col-6">
+							<img src="assets/a=0.5.png" class="mx-auto d-block w-100" alt="m=0">
+							<div class="text-center"> dragon</div>
+						</div>	
+					</div>
+					<h4> <u>Analysis</u></h4>
+					<div class="row">
+						<div class="col-6">
+							<img src="assets/a=0.005.jpg" class="mx-auto d-block w-100" alt="m=1">
+							<div class="text-center"> a=0.005</div>
+						</div>
+						<div class="col-6">
+							<img src="assets/a=0.05.png" class="mx-auto d-block w-100" alt="m=0">
+							<div class="text-center"> a=0.05</div>
+						</div>	
+					</div>
+					<div class="row">
+						<div class="col-6">
+							<img src="assets/a=0.25.png" class="mx-auto d-block w-100" alt="m=1">
+							<div class="text-center"> a=0.25</div>
+						</div>
+						<div class="col-6">
+							<img src="assets/a=0.5.png" class="mx-auto d-block w-100" alt="m=0">
+							<div class="text-center"> a=0.5</div>
+						</div>	
+					</div>
+					<p>From the four dragon images rendered under 128 samples per pixel, 1 sample per light and 5 max depth with different alpha values ranging from 0.005 to 0.05, we can see that increasing alpha value will make the object look more rough while decreasing the alpha value will make the object look more glossy.
+					</p>
+
+					<div class="row">
+						<div class="col-6">
+							<img src="assets/hemisphere.png" class="mx-auto d-block w-100" alt="m=1">
+							<div class="text-center"> hemisphere sampling</div>
+						</div>
+						<div class="col-6">
+							<img src="assets/importance.png" class="mx-auto d-block w-100" alt="m=0">
+							<div class="text-center"> importance sampling</div>
+						</div>	
+					</div>
+					<p>The above two images were rendered by using cosine hemisphere sampling and importance sampling. While both images were rendered under 64 samples per pixel, 1 sample per light and 5 max depth, the image from the left rendered by using cosine hemisphere sampling is very noisy. Although cosine hemisphere sampling did a great job in sampling diffuse BRDF, its performance for rendering microfacet material is poor. Therefore, instead of evenly sampling over a hemisphere, importance sampling focuses on the samples having greater impacts on the image and renders a less noisy image.
+					</p>
+					<div class="row">
+						<div class="col-6">
+							<img src="assets/a=0.25.png" class="mx-auto d-block w-100" alt="m=1">
+							<div class="text-center"> gold dragon</div>
+						</div>
+						<div class="col-6">
+							<img src="assets/dragon-iron.jpg" class="mx-auto d-block w-100" alt="m=0">
+							<div class="text-center"> iron dragon</div>
+						</div>	
+					</div>
+					<p>The iron material eta and k values under RGB channels are <2.8851, 2.9500, 2.6500> and <3.0449, 2.9300, 2.8075>. The above image shows an iron dragon rendered by changing its respective eta and k values under RGB wavelengths.</p>
+				</div>
+
+				
+
+				<p> <b>Link to the website: </b>https://cal-cs184-student.github.io/sp22-project-webpages-o0WeiyuFeng0o/proj3-2/index.html</p>
+			</div>
+			<!-- right margin -->
+			<div class="col-2 m-0 p-0"></div>
+		</div>
+	</div>
+
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+		integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+		crossorigin="anonymous"></script>
+
+</body>
+
 </html>
