@@ -1,7 +1,435 @@
 <html>
-	<head>
-	</head>
-	<body>
-		Project 4 here
-	</body>
+
+<head>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+		integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+</head>
+
+<body class="py-5">
+	<h2 class="text-center mb-5">Project 4 - <span class="inline text-danger">Cloth Sim</span></h2>
+	<div class="container">
+		<div class="row">
+			<!-- left margin -->
+			<div class="col-2 m-0 p-0"></div>
+			<!-- Content -->
+			<div class="col-8 p-0 m-0">
+				<!-- Overview -->
+				<div>
+					<h4 class=""><u> Overview </u></h4>
+					<p> 
+						In this project, I implemented a real-time cloth simulator using a mass and spring system. I first constructed the system by storing masses and adding springs to them. I added structural, shearing, and bending constraints to achieve a realistic simulation. Then, I applied physical forces and calculated the position of each mass using numerical integration. Furthermore, I simulated the masses' movement with collision. This involved colliding with other objects like sphere and plane, and colliding with the cloth itself. Finally, I implemented different shaders and visual effects. This includes diffuse shading, Blinn-Phong shading, texture mapping, displacement mapping, and bump mapping, and environment-mapped reflections. 
+					</p>
+				</div>
+
+				<!-- Task 1 -->
+				<div class="my-4">
+					<h4> <u>Part 1 - Masses and springs</u></h4>
+					<p> <b>Walk-through:</b>
+						In this part, I implemented the masses and springs system. I first calculated the position of each mass. For horizontal cloth, I set the y value for a constant number while for vertical cloth, I set a random z value ranging from -0.0001 to 0.0001. This variance will allow vertical cloth to not stand up on the floor as there will be horizontal forces when colliding with itself. Then I created three types of spring constrains and added them to the masses. The structural constraint is calculated from a mass to its left and top. The shearing constraint is calculated from a mass to its top left and top right. The bending constraint is calculated from a mass to its left's left and its top's top. In addition, I took care of the edge cases carefully.
+					</p>
+					<h4> <u>Outcome</u> </h4>
+					<div class="row">
+						<div class="col-4">
+							<img src="assets/all-constraints.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> system with all constraints</div>
+						</div>
+						<div class="col-4">
+							<img src="assets/only-shearing.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> system with ONLY shearing</div>
+						</div>
+						<div class="col-4">
+							<img src="assets/without-shearing.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> system without shearing</div>
+						</div>
+					</div>
+
+					<div class="row">
+						<div class="col-4">
+							<img src="assets/z-all.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> zoom-in of system with all constraints</div>
+						</div>
+						<div class="col-4">
+							<img src="assets/z-shearing.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> zoom-in of system with only shearing</div>
+						</div>
+						<div class="col-4">
+							<img src="assets/z-without-shearing.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> zoom-in of system without shearing</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-4">
+						</div>
+						<div class="col-4">
+							<img src="assets/pinned2.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> Pinned2</div>
+						</div>
+						<div class="col-4">
+						</div>
+					</div>
+				</div>
+
+				<!-- Task 2 -->
+				<div class="my-4">
+					<h4> <u>Part 2 - Simulation via numerical integration</u></h4>
+					<p> <b>Walk-through:</b>
+						In this part, I applied forces to the mass-spring system and calculated the new position for each mass. The calculation is based on the equation F = ma. I started with adding external force to every mass, which is the gravity in our case. Next, I calculated the spring correction forces with Hooke's law. When a spring's length is larger than the rest length, it will exert forces that drag two masses toward each other; otherwise, it will exert forces that separates two masses. Then, I added every valid spring force to the external force to get the total force applied to each mass. With the force and mass known, I calculated the acceleration of each mass and calculated its positions accordingly. Specifically, I used Verlet integration to calculate the new position. In addition, I added damping to the simulation to account for loss of energy by adding a (1-d) term, where d is the damping value.
+					</p>
+
+					<h4> <u>Outcome</u> </h4>
+					<div class="row">
+						<div class="col-6">
+							<img src="assets/Pinned4.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> Default pinned4 in final rest state</div>
+						</div>
+						<div class="col-6">
+							<img src="assets/cloth.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> Default cloth (ks=5000, density=15)</div>
+						</div>
+					</div>
+					<br>
+
+					<h4> <u>Analysis</u> </h4>			
+					<ul>
+						<li><b>Different ks values</b></li>
+						<p>The ks value, spring constant, refers to the stiff/stretchy property of a spring. A small ks value refers to a very springy spring; a large one refers to a stiffer spring. From the above graphs, we could know that when ks is set to 500, the cloth is stretched easily. Now the internal spring forces are low and gravity is the dominant force. When ks is set to 5000, the cloth gets stiffer and less bendable. The point_masses now are not able to move far away with each other so we see more distinct fold curves. When ks is set to 50000, the spring is too stiff and point masses hardly move around, resulting in only one very soft fold curve. 
+						</p>
+						<div class="row">
+							<div class="col-4">
+								<img src="assets/cloth-ks500.png" class="mx-auto d-block w-100" alt="">
+								<div class="text-center"> cloth with ks = 500</div>
+							</div>
+							<div class="col-4">
+								<img src="assets/cloth.png" class="mx-auto d-block w-100" alt="">
+								<div class="text-center"> cloth with ks = 5000 (default)</div>
+							</div>
+							<div class="col-4">
+								<img src="assets/cloth-ks50000.png" class="mx-auto d-block w-100" alt="">
+								<div class="text-center"> cloth with ks = 50000</div>
+							</div>
+						</div>
+						<br>
+
+						<li><b>Different density values</b></li>
+						<p>Density is used to calculate the mass of the point masses. It measures the mass per unit area of the cloth. In this case, a larger density means a larger force produced by gravity (as F = ma). When we set a low density, internal forces generated by springs will have more impact on the cloth compared with external forces like gravity force. Thus, we see a very soft fold when density = 1, as the point masses are not much dragged by gravity. When we increase the density to 15 and 80, we could clearly see that the fold curve becomes more obvious and distinct because now the gravity has a greater impact.
+						</p>
+						<div class="row">
+							<div class="col-4">
+								<img src="assets/cloth-d1.png" class="mx-auto d-block w-100" alt="">
+								<div class="text-center"> cloth with density = 1</div>
+							</div>
+							<div class="col-4">
+								<img src="assets/cloth.png" class="mx-auto d-block w-100" alt="">
+								<div class="text-center"> cloth with density = 15 (default)</div>
+							</div>
+							<div class="col-4">
+								<img src="assets/cloth-d80.png" class="mx-auto d-block w-100" alt="">
+								<div class="text-center"> cloth with density = 80</div>
+							</div>
+						</div>
+						<br>
+
+						<li><b>Different damping values</b></li>
+						<p> Damping value is used to model the energy loss in the system. In our case, a higher damping value means that the cloth will reach the final rest state (a stable state which has no more energy loss) faster. From the two gif showed above, we could clearly see the time difference between cloth simulation under two different damping values.
+						</p>
+						<div class="row">
+							<div class="col-6">
+								<img src="assets/cloth-damp1.gif" class="mx-auto d-block w-100" alt="">
+								<div class="text-center"> cloth with damping = 0.1</div>
+							</div>
+							<div class="col-6">
+								<img src="assets/cloth-damp4.gif" class="mx-auto d-block w-100" alt="">
+								<div class="text-center"> cloth with damping = 0.4</div>
+							</div>
+						</div>
+					</ul>
+				</div>
+
+				<!-- Task 3 -->
+				<div class="my-4">
+					<h4> <u>Part 3 - Handling collisions with other objects</u></h4>
+					<p> <b>Walk-through:</b>
+						In this part, I implemented the collision with other objects to accurately simulate the real world. This includes collision with spheres and planes. In each time step of simulation, I checked if any point collides with the other objects by checking if a point's position is inside or passing through other objects. If so, I calculated the tangent point of the point mass and the object surface. Based on the tangent point, I could calculate the correction vector that will set the point to the surface of the object to make it not passing through the object. Finally, I multiplied a friction to the correction vector and updated the position accordingly to simulate the real-world collision. 
+					</p>
+					<h4> <u>Outcome</u> </h4>
+					<div class="row">
+						<div class="col-6">
+							<img src="assets/sphere-mirror.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> cloth-sphere collision (mirror shader)</div>
+						</div>
+						<div class="col-6">
+							<img src="assets/plane.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> cloth-plane collision (phong shading)</div>
+						</div>
+					</div>
+					<br>
+
+					<h4> <u>Analysis</u> </h4>	
+					<p>From the pictures below we could see that when ks increases the cloth gets stiffer/harder. This could be clearly observed when comparing the final rest state of cloth when ks = 500 and when ks = 50000. </p>
+					<div class="row">
+						<div class="col-4">
+							<img src="assets/sphere-ks500.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> cloth-sphere collision with ks = 500</div>
+						</div>
+						<div class="col-4">
+							<img src="assets/sphere.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> cloth-sphere collision with ks = 5000 </div>
+						</div>
+						<div class="col-4">
+							<img src="assets/sphere-ks50000.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center">cloth-sphere collision with ks=50000</div>
+						</div>
+					</div>
+				</div>
+					
+				<!-- Task 4 -->
+				<div class="my-4">
+					<h4> <u>Part 4 - Handling self-collisions</u></h4>
+					<p> <b>Walk-through:</b>
+						In this part, I implemented the collision with the object itself. This enables the objects to present behaviors like folding and not clipping with itself. In order to implement this, I needed to check if two point masses are close enough. When they are close enough, I will apply a correction vector to their position to keep them separate at a distance. However, looping through every points will be computational expensive and unacceptable in real-time simulation. Thus, I spatially divided  the point masses into different bounding boxes and hashed all points of the same bounding box into the same bucket and significantly reduce the computational cost. So instead of checking every points against others, I only check the points that are most possibly be close enough, which means all points in each bounding box. Then, if the difference between any pair of points within each bucket is less than 2 x thickness (represents the cloth's thickness), I will adjust the initial point's position to be 2 x thickness distance away from that particular neighbor. The initial point's final position is the average of all the corrected positions divided by the number of simulation steps the cloth sim is running.
+					</p>
+					<h4> <u>Outcome</u> </h4>
+					<div class="row">
+						<div class="col-4">
+							<img src="assets/self-start.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> start falling</div>
+						</div>
+						<div class="col-4">
+							<img src="assets/self-middle.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> falling </div>
+						</div>
+						<div class="col-4">
+							<img src="assets/self-final.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> folded on a plane</div>
+						</div>
+					</div>
+					<br>
+
+					<h4> <u>Analysis</u> </h4>
+					<ul>
+						<li><b>Different ks values</b></li>
+						<p>When ks is low, the cloth is wrinkled. The small spring constant value means that the springs are extremely elastic. When ks is large, we could see the cloth is flattened on the plane.</p>
+						<div class="row">
+							<div class="col-6">
+								<img src="assets/self-ks500.png" class="mx-auto d-block w-100" alt="">
+								<div class="text-center"> self-collision with ks = 500</div>
+							</div>
+							<div class="col-6">
+								<img src="assets/self-ks50000.png" class="mx-auto d-block w-100" alt="">
+								<div class="text-center"> self-collision with ks = 50000 </div>
+							</div>
+						</div>
+						<br>
+
+						<li><b>Different density values</b></li>
+						<p>When density value is low, the cloth is relatively smooth as the total mass is low. There are no small wrinkles and the simulation ran quickly. When density value is large, the cloth has many wrinkles as the mass is large. Also, I noticed that some clipping occurred when density is large enough.</p>
+						<div class="row">
+							<div class="col-6">
+								<img src="assets/self-d1.png" class="mx-auto d-block w-100" alt="">
+								<div class="text-center"> self-collision with density = 1</div>
+							</div>
+							<div class="col-6">
+								<img src="assets/self-d80.png" class="mx-auto d-block w-100" alt="">
+								<div class="text-center"> self-collision with density = 80 </div>
+							</div>
+						</div>
+					</ul>
+				</div>
+
+				<div class="my-4">
+					<h4> <u>Part 5 - Shaders</u></h4>
+					<p> <b>Walk-through:</b>
+						In part5, we implemented shaders by using GLSL. Shaders are used to parallelize the computations on the GPU. By inputting texture files and other color parameters, the shaders output a 4D vector for vertices including information of color and displacement at the locations. Vertex shaders conduct transformations to vertices including displacement, while fragment shaders take the outputs of vertex shaders as input to calculate the color and other attributes of the fragments.
+					</p>
+
+					<h5> <u>Diffuse shading</u></h5>
+					<div class="row">
+						<div class="col-6">
+							<img src="assets/diffuse-shading.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> Diffuse Shading</div>
+						</div>
+						<div class="col-6"></div>
+					</div>
+
+					<h5> <u>Blinn-Phong shading</u></h5>
+					<p>Bling-Phong shading model has three components including ambient part, diffuse part and specular part. The ambient
+						part refers to the shadings that do not depend on anything. The diffuse part refers to the shadings that are
+						independent of view direction. The specular part refers to those shadings that are near mirror reflection of the
+						light direction.
+					</p>
+
+					<b>Entire Blinn-Phong shading </b>
+					<div class="row">
+						<div class="col-6">
+							<img src="assets/phlinn-phong-0.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> diffuse only, start state</div>
+						</div>
+						<div class="col-6">
+							<img src="assets/phlinn-phong-1.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> diffuse only, final state</div>
+						</div>
+					</div>
+					<br>
+
+					<b>Diffuse Only, Kd = 0.5</b>
+					<div class="row">
+						<div class="col-6">
+							<img src="assets/ambient-only-ka0.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> ambient-only, start state</div>
+						</div>
+						<div class="col-6">
+							<img src="assets/ambient-only-ka1.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> ambient-only, final state</div>
+						</div>
+					</div>
+					<br>
+
+					<b>Ambient Only, Ka = 0.5</b>
+					<div class="row">
+						<div class="col-6">
+							<img src="assets/diffuse-only-kd0.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> diffuse only, start state</div>
+						</div>
+						<div class="col-6">
+							<img src="assets/diffuse-only-kd1.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> diffuse only, final state</div>
+						</div>
+					</div>
+					<br>
+
+					<b>Specular Only, Ks = 0.5</b>
+					<div class="row">
+						<div class="col-6">
+							<img src="assets/specular-only-0.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> specular only, start state</div>
+						</div>
+						<div class="col-6">
+							<img src="assets/specular-only-1.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> specular only, final state</div>
+						</div>
+					</div>
+					<br>
+
+					<h5> <u>Texture Mapping</u></h5>
+					<p>By sampling from the texture uniform, we implemented texture mapping. The sampled spectrum is the output of the fragments’ color.
+					</p>
+					<div class="row">
+						<div class="col-6">
+							<img src="assets/texture-mapping-0.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> texture mapping, start state</div>
+						</div>
+						<div class="col-6">
+							<img src="assets/texture-mapping-1.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> texture mapping, final state</div>
+						</div>
+					</div>
+					<br>
+
+					<h5> <u>Displacement and Bump Mapping</u></h5>
+					<p>For bump mapping, we implemented the fragment shader by using surface normals specified by the texture to shade the surface of the cloth and object. For displacement mapping, besides doing the same thing on its fragment shader, we also modified its vertex shader by modifying the position of the vertices to reflect the height of the map.
+					</p>
+					<b>Bump Mapping</b>
+					<div class="row">
+						<div class="col-6">
+							<img src="assets/bump-mapping-0.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> bump mapping, start state</div>
+						</div>
+						<div class="col-6">
+							<img src="assets/bump_mapping-1.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> bump mapping, final state</div>
+						</div>
+					</div>
+					<br>
+
+					<b>Displacement Mapping</b>
+					<div class="row">
+						<div class="col-6">
+							<img src="assets/displacement-mapping-0.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> displacement mapping, start state</div>
+						</div>
+						<div class="col-6">
+							<img src="assets/displacement-mapping-1.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> displacement mapping, final state</div>
+						</div>
+					</div>
+					<br>
+					<p>
+						From the comparison of above two pairs of images, we can tell that bump mapping does not change the surface shape of the object and cloth, while the displacement mapping moves vertices’ original positions of both object and cloth making a rough surface reflecting height of the texture.
+					</p>
+					<br>
+
+					<b>Coarse Analysis</b>
+					<div class="row">
+						<div class="col-3">
+							<img src="assets/bump-coarse-16-0.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> bump mapping start state, coarseness =  16</div>
+						</div>
+						<div class="col-3">
+							<img src="assets/bump-coarse-16-1.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> bump mapping final state, coarseness = 16</div>
+						</div>
+						<div class="col-3">
+							<img src="assets/displacement-coarse-16-0.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> displacement mapping start state, coarseness =  16</div>
+						</div>
+						<div class="col-3">
+							<img src="assets/displacement-coarse-16-1.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> displacement mapping final state, coarseness = 16</div>
+						</div>
+					</div>
+					<br>
+
+					<div class="row">
+						<div class="col-3">
+							<img src="assets/bump-coarse-128-0.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> bump mapping start state, coarseness =  128</div>
+						</div>
+						<div class="col-3">
+							<img src="assets/bump-coarse-128-1.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> bump mapping final state, coarseness = 128</div>
+						</div>
+						<div class="col-3">
+							<img src="assets/displacement-coarse-128-0.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center">displacement map start state, coarseness = 128</div>
+						</div>
+						<div class="col-3">
+							<img src="assets/displacement-coarse-128-1.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center">displacement map final state, coarseness = 128</div>
+						</div>
+					</div>
+					<br>
+					<p>From the above two groups of images showing bump mapping and displacement mapping under different coarseness levels, we can see no difference between two pairs of bump mapping images under different coarseness levels as bump mapping is based on pixels instead of vertices. However, there is an obvious difference between two pairs of displacement mapping images under low and high coarseness levels. With higher coarseness, there are more vertices moved bringing more details and in 
+					turn rendering a more detailed image.</p>
+
+					<br>
+					<h5> <u>Environment-mapped Reflections</u></h5>
+					<p>For mirror mapping, we used camera’s position and fragment’s position to compute eye-ray. Then, we used eye-ray and surface normal to get reflected ray. Finally, we sampled the environment map uniform at the reflected direction to get the fragments’ color.
+					</p>
+
+					<div class="row">
+						<div class="col-6">
+							<img src="assets/mirror-0.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> mirror mapping, start state </div>
+						</div>
+						<div class="col-6">
+							<img src="assets/mirror-1.png" class="mx-auto d-block w-100" alt="">
+							<div class="text-center"> mirror mapping, final state</div>
+						</div>
+					</div>
+				</div>
+				
+				<p> <b>Link to the website: </b>https://cal-cs184-student.github.io/sp22-project-webpages-o0WeiyuFeng0o/proj4/index.html</p>
+
+			</div>
+			<!-- right margin -->
+			<div class="col-2 m-0 p-0"></div>
+		</div>
+	</div>
+	
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+		integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+		crossorigin="anonymous"></script>
+
+</body>
+
 </html>
